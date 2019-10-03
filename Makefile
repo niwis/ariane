@@ -156,7 +156,6 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         $(wildcard fpga/src/axi2apb/src/*.sv)                                  \
         $(wildcard fpga/src/apb_timer/*.sv)                                    \
         $(wildcard fpga/src/axi_slice/src/*.sv)                                \
-        $(wildcard src/axi_node/src/*.sv)                                      \
         $(wildcard src/axi_riscv_atomics/src/*.sv)                             \
         $(wildcard src/axi_mem_if/src/*.sv)                                    \
         $(wildcard src/pmp/src/*.sv)                                           \
@@ -210,8 +209,17 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/common_cells/src/lfsr_8bit.sv                                      \
         src/common_cells/src/lfsr_16bit.sv                                     \
         src/common_cells/src/delta_counter.sv                                  \
+        src/common_cells/src/stream_register.sv                                \
         src/common_cells/src/counter.sv                                        \
+        src/common_cells/src/delta_counter.sv                                  \
         src/common_cells/src/shift_reg.sv                                      \
+        src/axi/src/axi_addr_decode.sv                                         \
+        src/axi/src/axi_atop_filter.sv                                         \
+        src/axi/src/axi_demux.sv                                               \
+        src/axi/src/axi_id_prepend.sv                                          \
+        src/axi/src/axi_mux.sv                                                 \
+        src/axi/src/axi_decerr_slv.sv                                          \
+        src/axi/src/axi_xbar.sv                                                \
         src/tech_cells_generic/src/pulp_clock_gating.sv                        \
         src/tech_cells_generic/src/cluster_clock_inverter.sv                   \
         src/tech_cells_generic/src/pulp_clock_mux2.sv                          \
@@ -247,7 +255,7 @@ riscv-fp-tests            := $(shell xargs printf '\n%s' < $(riscv-fp-tests-list
 riscv-benchmarks          := $(shell xargs printf '\n%s' < $(riscv-benchmarks-list) | cut -b 1-)
 
 # Search here for include files (e.g.: non-standalone components)
-incdir := src/common_cells/include/
+incdir := src/common_cells/include/ src/axi/include/
 # Compile and sim flags
 compile_flag     += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive +define+$(defines)
 uvm-flags        += +UVM_NO_RELNOTES +UVM_VERBOSITY=LOW
