@@ -451,6 +451,19 @@ dm_top #(
     .dmi_resp_o       ( debug_resp        )
 );
 
+AXI_BUS #(
+  .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+  .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+  .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+  .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+) dm_bus ();
+
+axi_slave_connect_rev i_dm_connect (
+  .axi_req_i ( mst_ports_req [ariane_soc::Debug] ),
+  .axi_resp_o( mst_ports_resp[ariane_soc::Debug] )
+  .slave     ( dm_bus )
+);
+
 axi2mem #(
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves    ),
     .AXI_ADDR_WIDTH ( AxiAddrWidth        ),
@@ -459,7 +472,7 @@ axi2mem #(
 ) i_dm_axi2mem (
     .clk_i      ( clk                       ),
     .rst_ni     ( rst_n                     ),
-    .slave      ( master[ariane_soc::Debug] ),
+    .slave      ( dm_bus                    ), //master[ariane_soc::Debug] ),
     .req_o      ( dm_slave_req              ),
     .we_o       ( dm_slave_we               ),
     .addr_o     ( dm_slave_addr             ),
@@ -606,7 +619,7 @@ AXI_BUS #(
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
     .AXI_USER_WIDTH ( AxiUserWidth     )
 ) plic_bus();
-axi_slave_connect_rev i_rom_connect_rev (
+axi_slave_connect_rev i_plic_connect_rev (
   .axi_req_i  ( mst_ports_req [ariane_soc::PLIC] ),
   .axi_resp_o ( mst_ports_resp[ariane_soc::PLIC] ),
   .slave      ( plic_bus                         )
@@ -617,7 +630,7 @@ AXI_BUS #(
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
     .AXI_USER_WIDTH ( AxiUserWidth     )
 ) uart_bus();
-axi_slave_connect_rev i_rom_connect_rev (
+axi_slave_connect_rev i_uart_connect_rev (
   .axi_req_i  ( mst_ports_req [ariane_soc::UART] ),
   .axi_resp_o ( mst_ports_resp[ariane_soc::UART] ),
   .slave      ( uart_bus                         )
@@ -628,7 +641,7 @@ AXI_BUS #(
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
     .AXI_USER_WIDTH ( AxiUserWidth     )
 ) spi_bus();
-axi_slave_connect_rev i_rom_connect_rev (
+axi_slave_connect_rev i_spi_connect_rev (
   .axi_req_i  ( mst_ports_req [ariane_soc::SPI] ),
   .axi_resp_o ( mst_ports_resp[ariane_soc::SPI] ),
   .slave      ( spi_bus                         )
@@ -639,7 +652,7 @@ AXI_BUS #(
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
     .AXI_USER_WIDTH ( AxiUserWidth     )
 ) gpio_bus();
-axi_slave_connect_rev i_rom_connect_rev (
+axi_slave_connect_rev i_gpio_connect_rev (
   .axi_req_i  ( mst_ports_req [ariane_soc::GPIO] ),
   .axi_resp_o ( mst_ports_resp[ariane_soc::GPIO] ),
   .slave      ( gpio_bus                         )
@@ -650,7 +663,7 @@ AXI_BUS #(
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
     .AXI_USER_WIDTH ( AxiUserWidth     )
 ) ethernet_bus();
-axi_slave_connect_rev i_rom_connect_rev (
+axi_slave_connect_rev i_ethernet_connect_rev (
   .axi_req_i  ( mst_ports_req [ariane_soc::Ethernet] ),
   .axi_resp_o ( mst_ports_resp[ariane_soc::Ethernet] ),
   .slave      ( ethernet_bus                         )
