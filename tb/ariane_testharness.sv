@@ -652,9 +652,9 @@ module ariane_testharness #(
     .mst_resp_t     ( ariane_axi::resp_slv_t    ),
     .rule_t         ( axi_pkg::xbar_rule_64_t   )
   ) i_axi_xbar (
-    .clk_i  ( clk        ),
-    .rst_ni ( ndmreset_n ),
-    .test_i ( test_en    ),
+    .clk_i  ( clk_i      ),
+    .rst_ni ( rst_ni     ),
+    .test_i ( 1'b0       ),
     // slave ports, connect here the master modules
     .slv_ports_req_i  ( slv_ports_req  ),
     .slv_ports_resp_o ( slv_ports_resp ),
