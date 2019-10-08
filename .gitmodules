@@ -55,3 +55,6 @@
 [submodule "tb/common_verification"]
 	path = tb/common_verification
 	url = https://github.com/pulp-platform/common_verification.git
+[submodule "src/llc"]
+	path = src/llc
+	url = git@iis-git.ee.ethz.ch:wroennin/llc.git
