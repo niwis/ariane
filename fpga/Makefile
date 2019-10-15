@@ -1,5 +1,6 @@
-VIVADO ?= vivado
-VIVADOFLAGS ?= -nojournal -mode batch -source scripts/prologue.tcl
+VIVADO ?= vivado-2018.2
+VIVADOFLAGS ?= -nojournal -source scripts/prologue.tcl
+#-mode batch
 
 work-dir := work-fpga
 bit := $(work-dir)/ariane_xilinx.bit
@@ -19,11 +20,11 @@ all: $(mcs)
 
 # Generate mcs from bitstream
 $(mcs): $(bit)
-	$(VIVADO) $(VIVADOFLAGS) -source scripts/write_cfgmem.tcl -tclargs $@ $^
+	$(VIVADO) vivado $(VIVADOFLAGS) -source scripts/write_cfgmem.tcl -tclargs $@ $^
 
 $(bit): $(ips)
 	mkdir -p $(work-dir)
-	$(VIVADO) $(VIVADOFLAGS) -source scripts/run.tcl
+	$(VIVADO) vivado $(VIVADOFLAGS) -source scripts/run.tcl
 	cp ariane.runs/impl_1/ariane_xilinx* ./$(work-dir)
 
 $(ips): %.xci :
@@ -35,7 +36,7 @@ $(ips): %.xci :
 mcs: $(mcs)
 
 program:
-	$(VIVADO) $(VIVADOFLAGS) -source scripts/program.tcl
+	$(VIVADO) vivado $(VIVADOFLAGS) -source scripts/program.tcl
 
 clean:
 	rm -rf *.log *.jou *.str *.mif *.xpr $(work-dir) ariane.cache ariane.hw ariane.ip_user_files
