@@ -374,7 +374,7 @@ module ariane_testharness #(
   );
 `endif
   // ------------------------------
-  // Memory + Exclusive Access
+  // Memory + LLC + Exclusive Access
   // ------------------------------
   AXI_BUS #(
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
@@ -390,31 +390,259 @@ module ariane_testharness #(
   logic [AXI_DATA_WIDTH-1:0]    wdata;
   logic [AXI_DATA_WIDTH-1:0]    rdata;
 
-  AXI_BUS #(
-      .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
-      .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-      .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
-      .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
-  ) atomics_bus();
-  axi_slave_connect_rev i_atomics_connect_rev (
-    .axi_req_i  ( mst_ports_req [ariane_soc::DRAM] ),
-    .axi_resp_o ( mst_ports_resp[ariane_soc::DRAM] ),
-    .slave      ( atomics_bus                      )
+  ariane_axi::req_slv_t  llc_req;
+  ariane_axi::resp_slv_t llc_resp;
+
+  // AXI_BUS #(
+  //     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+  //     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+  //     .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+  //     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+  // ) atomics_bus();
+  // axi_slave_connect_rev i_atomics_connect_rev (
+  //   .axi_req_i  ( mst_ports_req [ariane_soc::DRAM] ),
+  //   .axi_resp_o ( mst_ports_resp[ariane_soc::DRAM] ),
+  //   .slave      ( atomics_bus                      )
+  // );
+
+  axi_riscv_atomics #(
+    .AXI_ADDR_WIDTH    ( AXI_ADDRESS_WIDTH        ),
+    .AXI_DATA_WIDTH    ( AXI_DATA_WIDTH           ),
+    .AXI_ID_WIDTH      ( ariane_soc::IdWidthSlave ),
+    .AXI_USER_WIDTH    ( AXI_USER_WIDTH           ),
+    .AXI_MAX_WRITE_TXNS( 1                        ),
+    .RISCV_WORD_WIDTH  ( 64                       )
+  ) i_axi_riscv_atomics (
+    .clk_i           ( clk_i          ),
+    .rst_ni          ( ndmreset_n     ),
+    .slv_aw_id_i     ( mst_ports_req [ariane_soc::DRAM].aw.id     ),
+    .slv_aw_addr_i   ( mst_ports_req [ariane_soc::DRAM].aw.addr   ),
+    .slv_aw_prot_i   ( mst_ports_req [ariane_soc::DRAM].aw.prot   ),
+    .slv_aw_region_i ( mst_ports_req [ariane_soc::DRAM].aw.region ),
+    .slv_aw_atop_i   ( mst_ports_req [ariane_soc::DRAM].aw.atop   ),
+    .slv_aw_len_i    ( mst_ports_req [ariane_soc::DRAM].aw.len    ),
+    .slv_aw_size_i   ( mst_ports_req [ariane_soc::DRAM].aw.size   ),
+    .slv_aw_burst_i  ( mst_ports_req [ariane_soc::DRAM].aw.burst  ),
+    .slv_aw_lock_i   ( mst_ports_req [ariane_soc::DRAM].aw.lock   ),
+    .slv_aw_cache_i  ( mst_ports_req [ariane_soc::DRAM].aw.cache  ),
+    .slv_aw_qos_i    ( mst_ports_req [ariane_soc::DRAM].aw.qos    ),
+    .slv_aw_user_i   ( '0                                         ),
+    .slv_aw_valid_i  ( mst_ports_req [ariane_soc::DRAM].aw_valid  ),
+    .slv_aw_ready_o  ( mst_ports_resp[ariane_soc::DRAM].aw_ready  ),
+
+    .slv_ar_id_i     ( mst_ports_req [ariane_soc::DRAM].ar.id     ),
+    .slv_ar_addr_i   ( mst_ports_req [ariane_soc::DRAM].ar.addr   ),
+    .slv_ar_prot_i   ( mst_ports_req [ariane_soc::DRAM].ar.prot   ),
+    .slv_ar_region_i ( mst_ports_req [ariane_soc::DRAM].ar.region ),
+    .slv_ar_len_i    ( mst_ports_req [ariane_soc::DRAM].ar.len    ),
+    .slv_ar_size_i   ( mst_ports_req [ariane_soc::DRAM].ar.size   ),
+    .slv_ar_burst_i  ( mst_ports_req [ariane_soc::DRAM].ar.burst  ),
+    .slv_ar_lock_i   ( mst_ports_req [ariane_soc::DRAM].ar.lock   ),
+    .slv_ar_cache_i  ( mst_ports_req [ariane_soc::DRAM].ar.cache  ),
+    .slv_ar_qos_i    ( mst_ports_req [ariane_soc::DRAM].ar.qos    ),
+    .slv_ar_user_i   ( '0                                         ),
+    .slv_ar_valid_i  ( mst_ports_req [ariane_soc::DRAM].ar_valid  ),
+    .slv_ar_ready_o  ( mst_ports_resp[ariane_soc::DRAM].ar_ready  ),
+
+    .slv_w_data_i    ( mst_ports_req [ariane_soc::DRAM].w.data    ),
+    .slv_w_strb_i    ( mst_ports_req [ariane_soc::DRAM].w.strb    ),
+    .slv_w_user_i    ( '0                                         ),
+    .slv_w_last_i    ( mst_ports_req [ariane_soc::DRAM].w.last    ),
+    .slv_w_valid_i   ( mst_ports_req [ariane_soc::DRAM].w_valid   ),
+    .slv_w_ready_o   ( mst_ports_resp[ariane_soc::DRAM].w_ready   ),
+
+    .slv_r_id_o      ( mst_ports_resp[ariane_soc::DRAM].r.id      ),
+    .slv_r_data_o    ( mst_ports_resp[ariane_soc::DRAM].r.data    ),
+    .slv_r_resp_o    ( mst_ports_resp[ariane_soc::DRAM].r.resp    ),
+    .slv_r_last_o    ( mst_ports_resp[ariane_soc::DRAM].r.last    ),
+    .slv_r_user_o    (                                            ),
+    .slv_r_valid_o   ( mst_ports_resp[ariane_soc::DRAM].r_valid   ),
+    .slv_r_ready_i   ( mst_ports_req [ariane_soc::DRAM].r_ready   ),
+
+    .slv_b_id_o      ( mst_ports_resp[ariane_soc::DRAM].b.id      ),
+    .slv_b_resp_o    ( mst_ports_resp[ariane_soc::DRAM].b.resp    ),
+    .slv_b_user_o    (                                            ),
+    .slv_b_valid_o   ( mst_ports_resp[ariane_soc::DRAM].b_valid   ),
+    .slv_b_ready_i   ( mst_ports_req [ariane_soc::DRAM].b_ready   ),
+
+    .mst_aw_id_o     ( llc_req.aw.id     ),
+    .mst_aw_addr_o   ( llc_req.aw.addr   ),
+    .mst_aw_prot_o   ( llc_req.aw.prot   ),
+    .mst_aw_region_o ( llc_req.aw.region ),
+    .mst_aw_atop_o   ( llc_req.aw.atop   ),
+    .mst_aw_len_o    ( llc_req.aw.len    ),
+    .mst_aw_size_o   ( llc_req.aw.size   ),
+    .mst_aw_burst_o  ( llc_req.aw.burst  ),
+    .mst_aw_lock_o   ( llc_req.aw.lock   ),
+    .mst_aw_cache_o  ( llc_req.aw.cache  ),
+    .mst_aw_qos_o    ( llc_req.aw.qos    ),
+    .mst_aw_user_o   (                   ),
+    .mst_aw_valid_o  ( llc_req.aw_valid  ),
+    .mst_aw_ready_i  ( llc_resp.aw_ready ),
+
+    .mst_ar_id_o     ( llc_req.ar.id     ),
+    .mst_ar_addr_o   ( llc_req.ar.addr   ),
+    .mst_ar_prot_o   ( llc_req.ar.prot   ),
+    .mst_ar_region_o ( llc_req.ar.region ),
+    .mst_ar_len_o    ( llc_req.ar.len    ),
+    .mst_ar_size_o   ( llc_req.ar.size   ),
+    .mst_ar_burst_o  ( llc_req.ar.burst  ),
+    .mst_ar_lock_o   ( llc_req.ar.lock   ),
+    .mst_ar_cache_o  ( llc_req.ar.cache  ),
+    .mst_ar_qos_o    ( llc_req.ar.qos    ),
+    .mst_ar_user_o   (                   ),
+    .mst_ar_valid_o  ( llc_req.ar_valid  ),
+    .mst_ar_ready_i  ( llc_resp.ar_ready ),
+
+    .mst_w_data_o    ( llc_req.w.data    ),
+    .mst_w_strb_o    ( llc_req.w.strb    ),
+    .mst_w_last_o    ( llc_req.w.last    ),
+    .mst_w_user_o    (                   ),
+    .mst_w_valid_o   ( llc_req.w_valid   ),
+    .mst_w_ready_i   ( llc_resp.w_ready  ),
+
+    .mst_r_id_i      ( llc_resp.r.id     ),
+    .mst_r_data_i    ( llc_resp.r.data   ),
+    .mst_r_resp_i    ( llc_resp.r.resp   ),
+    .mst_r_last_i    ( llc_resp.r.last   ),
+    .mst_r_user_i    ( '0                ),
+    .mst_r_valid_i   ( llc_resp.r_valid  ),
+    .mst_r_ready_o   ( llc_req.r_ready   ),
+
+    .mst_b_id_i      ( llc_resp.b.id     ),
+    .mst_b_resp_i    ( llc_resp.b.resp   ),
+    .mst_b_user_i    ( '0                ),
+    .mst_b_valid_i   ( llc_resp.b_valid  ),
+    .mst_b_ready_o   ( llc_req.b_ready   )
   );
 
-  axi_riscv_atomics_wrap #(
-    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
-    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
-    .AXI_USER_WIDTH ( AXI_USER_WIDTH           ),
-    .AXI_MAX_WRITE_TXNS ( 1  ),
-    .RISCV_WORD_WIDTH   ( 64 )
-  ) i_axi_riscv_atomics (
-    .clk_i,
-    .rst_ni ( ndmreset_n               ),
-    .slv    ( atomics_bus              ), // master[ariane_soc::DRAM] ),
-    .mst    ( dram                     )
+  ariane_axi::req_slv_t  dram_req;
+  ariane_axi::resp_slv_t dram_resp;
+
+  //TODO: put llc here
+  //assign dram_req = llc_req;
+  //assign llc_resp = dram_resp;
+
+  localparam llc_pkg::llc_axi_cfg_t LlcAxiCfg = '{
+    SlvPortIdWidth:    ariane_soc::IdWidthSlave,
+    MstPortIdWidth:    ariane_soc::IdWidthSlave,
+    AddrWidthFull:     AXI_ADDRESS_WIDTH,
+    DataWidthFull:     AXI_DATA_WIDTH,
+    LitePortAddrWidth: AXI_ADDRESS_WIDTH,
+    LitePortDataWidth: 32
+  };
+  typedef logic [AXI_ADDRESS_WIDTH-1:0] addr_t;
+  typedef logic [31:0]                  data_lite_t;
+  typedef logic [3:0]                   strb_lite_t;
+
+  // AXI4 Lite
+  typedef struct packed {
+    addr_t          addr;
+    // axi_pkg::prot_t prot; // not in pulp axi
+  } aw_chan_lite_t;
+  typedef struct packed {
+    data_lite_t     data;
+    strb_lite_t     strb;
+  } w_chan_lite_t;
+  typedef struct packed {
+    axi_pkg::resp_t resp;
+  } b_chan_lite_t;
+  typedef struct packed {
+    addr_t          addr;
+    // axi_pkg::prot_t prot; // not in pulp axi
+  } ar_chan_lite_t;
+  typedef struct packed {
+    data_lite_t     data;
+    axi_pkg::resp_t resp;
+  } r_chan_lite_t;
+  typedef struct packed {
+    aw_chan_lite_t  aw;
+    logic           aw_valid;
+    w_chan_lite_t   w;
+    logic           w_valid;
+    logic           b_ready;
+    ar_chan_lite_t  ar;
+    logic           ar_valid;
+    logic           r_ready;
+  } req_lite_t;
+  typedef struct packed {
+    logic           aw_ready;
+    logic           w_ready;
+    b_chan_lite_t   b;
+    logic           b_valid;
+    logic           ar_ready;
+    r_chan_lite_t   r;
+    logic           r_valid;
+  } resp_lite_t;
+
+  llc #(
+    .SetAssociativity( 8                         ),
+    .NoLines         ( 1024                      ),
+    .NoBlocks        ( 8                         ),
+    .AxiCfg          ( LlcAxiCfg                 ),
+    .SPM_BASE        ( 64'h0000_0000             ),
+    .RAM_BASE        ( ariane_soc::DRAMBase      ),
+    .SPM_LENGTH      ( 64'h0020_0000             ),
+    .RAM_LENGTH      ( ariane_soc::DRAMLength    ),
+    .CFG_BASE        ( 64'h0000_0000             ),
+    .slv_aw_chan_t   ( ariane_axi::aw_chan_slv_t ),
+    .mst_aw_chan_t   ( ariane_axi::aw_chan_slv_t ),
+    .w_chan_t        ( ariane_axi::w_chan_t      ),
+    .slv_b_chan_t    ( ariane_axi::b_chan_slv_t  ),
+    .mst_b_chan_t    ( ariane_axi::b_chan_slv_t  ),
+    .slv_ar_chan_t   ( ariane_axi::ar_chan_slv_t ),
+    .mst_ar_chan_t   ( ariane_axi::ar_chan_slv_t ),
+    .slv_r_chan_t    ( ariane_axi::r_chan_slv_t  ),
+    .mst_r_chan_t    ( ariane_axi::r_chan_slv_t  ),
+    .slv_req_t       ( ariane_axi::req_slv_t     ),
+    .slv_resp_t      ( ariane_axi::resp_slv_t    ),
+    .mst_req_t       ( ariane_axi::req_slv_t     ),
+    .mst_resp_t      ( ariane_axi::resp_slv_t    ),
+    .lite_aw_chan_t  ( aw_chan_lite_t            ),
+    .lite_w_chan_t   ( w_chan_lite_t             ),
+    .lite_b_chan_t   ( b_chan_lite_t             ),
+    .lite_ar_chan_t  ( ar_chan_lite_t            ),
+    .lite_r_chan_t   ( r_chan_lite_t             ),
+    .lite_req_t      ( req_lite_t                ),
+    .lite_resp_t     ( resp_lite_t               ),
+    .rule_t          ( axi_pkg::xbar_rule_64_t   )
+  ) i_llc (
+    .clk_i       ( clk_i          ),
+    .rst_ni      ( ndmreset_n     ),
+    .test_i      ( test_en        ),
+    .slv_req_i   ( llc_req        ),
+    .slv_resp_o  ( llc_resp       ),
+    .mst_req_o   ( dram_req       ),
+    .mst_resp_i  ( dram_resp      ),
+    .conf_req_i  ( '0             ),
+    .conf_resp_o (                )
   );
+
+  //axi_riscv_atomics_wrap #(
+  //  .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+  //  .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+  //  .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+  //  .AXI_USER_WIDTH ( AXI_USER_WIDTH           ),
+  //  .AXI_MAX_WRITE_TXNS ( 1  ),
+  //  .RISCV_WORD_WIDTH   ( 64 )
+  //) i_axi_riscv_atomics (
+  //  .clk_i,
+  //  .rst_ni ( ndmreset_n               ),
+  //  .slv    ( atomics_bus              ), // master[ariane_soc::DRAM] ),
+  //  .mst    ( dram                     )
+  //);
+
+//  ariane_axi::aw_chan_slv_t aw_chan_i;
+//  ariane_axi::w_chan_t      w_chan_i;
+//  ariane_axi::b_chan_slv_t  b_chan_o;
+//  ariane_axi::ar_chan_slv_t ar_chan_i;
+//  ariane_axi::r_chan_slv_t  r_chan_o;
+
+  ariane_axi::aw_chan_slv_t aw_chan_o;
+  ariane_axi::w_chan_t      w_chan_o;
+  ariane_axi::b_chan_slv_t  b_chan_i;
+  ariane_axi::ar_chan_slv_t ar_chan_o;
+  ariane_axi::r_chan_slv_t  r_chan_i;
 
   AXI_BUS #(
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
@@ -447,21 +675,26 @@ module ariane_testharness #(
   ) i_axi_delayer (
     .clk_i      ( clk_i                 ),
     .rst_ni     ( ndmreset_n            ),
-    .aw_valid_i ( dram.aw_valid         ),
-    .aw_chan_i  ( aw_chan_i             ),
-    .aw_ready_o ( dram.aw_ready         ),
-    .w_valid_i  ( dram.w_valid          ),
-    .w_chan_i   ( w_chan_i              ),
-    .w_ready_o  ( dram.w_ready          ),
-    .b_valid_o  ( dram.b_valid          ),
-    .b_chan_o   ( b_chan_o              ),
-    .b_ready_i  ( dram.b_ready          ),
-    .ar_valid_i ( dram.ar_valid         ),
-    .ar_chan_i  ( ar_chan_i             ),
-    .ar_ready_o ( dram.ar_ready         ),
-    .r_valid_o  ( dram.r_valid          ),
-    .r_chan_o   ( r_chan_o              ),
-    .r_ready_i  ( dram.r_ready          ),
+    .aw_chan_i  ( dram_req.aw           ),
+    .aw_valid_i ( dram_req.aw_valid     ),
+    .aw_ready_o ( dram_resp.aw_ready    ),
+
+    .w_chan_i   ( dram_req.w            ),
+    .w_valid_i  ( dram_req.w_valid      ),
+    .w_ready_o  ( dram_resp.w_ready     ),
+
+    .b_chan_o   ( dram_resp.b           ),
+    .b_valid_o  ( dram_resp.b_valid     ),
+    .b_ready_i  ( dram_req.b_ready      ),
+
+    .ar_chan_i  ( dram_req.ar           ),
+    .ar_valid_i ( dram_req.ar_valid     ),
+    .ar_ready_o ( dram_resp.ar_ready    ),
+
+    .r_chan_o   ( dram_resp.r           ),
+    .r_valid_o  ( dram_resp.r_valid     ),
+    .r_ready_i  ( dram_req.r_ready      ),
+
     .aw_valid_o ( dram_delayed.aw_valid ),
     .aw_chan_o  ( aw_chan_o             ),
     .aw_ready_i ( dram_delayed.aw_ready ),
@@ -479,80 +712,80 @@ module ariane_testharness #(
     .r_ready_o  ( dram_delayed.r_ready  )
   );
 
-  assign aw_chan_i.atop = dram.aw_atop;
-  assign aw_chan_i.id = dram.aw_id;
-  assign aw_chan_i.addr = dram.aw_addr;
-  assign aw_chan_i.len = dram.aw_len;
-  assign aw_chan_i.size = dram.aw_size;
-  assign aw_chan_i.burst = dram.aw_burst;
-  assign aw_chan_i.lock = dram.aw_lock;
-  assign aw_chan_i.cache = dram.aw_cache;
-  assign aw_chan_i.prot = dram.aw_prot;
-  assign aw_chan_i.qos = dram.aw_qos;
-  assign aw_chan_i.region = dram.aw_region;
+//  assign aw_chan_i.atop = dram.aw_atop;
+//  assign aw_chan_i.id = dram.aw_id;
+//  assign aw_chan_i.addr = dram.aw_addr;
+//  assign aw_chan_i.len = dram.aw_len;
+//  assign aw_chan_i.size = dram.aw_size;
+//  assign aw_chan_i.burst = dram.aw_burst;
+//  assign aw_chan_i.lock = dram.aw_lock;
+//  assign aw_chan_i.cache = dram.aw_cache;
+//  assign aw_chan_i.prot = dram.aw_prot;
+//  assign aw_chan_i.qos = dram.aw_qos;
+//  assign aw_chan_i.region = dram.aw_region;
+//
+//  assign ar_chan_i.id = dram.ar_id;
+//  assign ar_chan_i.addr = dram.ar_addr;
+//  assign ar_chan_i.len = dram.ar_len;
+//  assign ar_chan_i.size = dram.ar_size;
+//  assign ar_chan_i.burst = dram.ar_burst;
+//  assign ar_chan_i.lock = dram.ar_lock;
+//  assign ar_chan_i.cache = dram.ar_cache;
+//  assign ar_chan_i.prot = dram.ar_prot;
+//  assign ar_chan_i.qos = dram.ar_qos;
+//  assign ar_chan_i.region = dram.ar_region;
+//
+//  assign w_chan_i.data = dram.w_data;
+//  assign w_chan_i.strb = dram.w_strb;
+//  assign w_chan_i.last = dram.w_last;
+//
+//  assign dram.r_id = r_chan_o.id;
+//  assign dram.r_data = r_chan_o.data;
+//  assign dram.r_resp = r_chan_o.resp;
+//  assign dram.r_last = r_chan_o.last;
+//
+//  assign dram.b_id = b_chan_o.id;
+//  assign dram.b_resp = b_chan_o.resp;
 
-  assign ar_chan_i.id = dram.ar_id;
-  assign ar_chan_i.addr = dram.ar_addr;
-  assign ar_chan_i.len = dram.ar_len;
-  assign ar_chan_i.size = dram.ar_size;
-  assign ar_chan_i.burst = dram.ar_burst;
-  assign ar_chan_i.lock = dram.ar_lock;
-  assign ar_chan_i.cache = dram.ar_cache;
-  assign ar_chan_i.prot = dram.ar_prot;
-  assign ar_chan_i.qos = dram.ar_qos;
-  assign ar_chan_i.region = dram.ar_region;
-
-  assign w_chan_i.data = dram.w_data;
-  assign w_chan_i.strb = dram.w_strb;
-  assign w_chan_i.last = dram.w_last;
-
-  assign dram.r_id = r_chan_o.id;
-  assign dram.r_data = r_chan_o.data;
-  assign dram.r_resp = r_chan_o.resp;
-  assign dram.r_last = r_chan_o.last;
-
-  assign dram.b_id = b_chan_o.id;
-  assign dram.b_resp = b_chan_o.resp;
-
-  assign dram_delayed.aw_id = aw_chan_o.id;
-  assign dram_delayed.aw_addr = aw_chan_o.addr;
-  assign dram_delayed.aw_len = aw_chan_o.len;
-  assign dram_delayed.aw_size = aw_chan_o.size;
-  assign dram_delayed.aw_burst = aw_chan_o.burst;
-  assign dram_delayed.aw_lock = aw_chan_o.lock;
-  assign dram_delayed.aw_cache = aw_chan_o.cache;
-  assign dram_delayed.aw_prot = aw_chan_o.prot;
-  assign dram_delayed.aw_qos = aw_chan_o.qos;
-  assign dram_delayed.aw_atop = aw_chan_o.atop;
+  assign dram_delayed.aw_id     = aw_chan_o.id;
+  assign dram_delayed.aw_addr   = aw_chan_o.addr;
+  assign dram_delayed.aw_len    = aw_chan_o.len;
+  assign dram_delayed.aw_size   = aw_chan_o.size;
+  assign dram_delayed.aw_burst  = aw_chan_o.burst;
+  assign dram_delayed.aw_lock   = aw_chan_o.lock;
+  assign dram_delayed.aw_cache  = aw_chan_o.cache;
+  assign dram_delayed.aw_prot   = aw_chan_o.prot;
+  assign dram_delayed.aw_qos    = aw_chan_o.qos;
+  assign dram_delayed.aw_atop   = aw_chan_o.atop;
   assign dram_delayed.aw_region = aw_chan_o.region;
-  assign dram_delayed.aw_user = '0;
+  assign dram_delayed.aw_user   = '0;
 
-  assign dram_delayed.ar_id = ar_chan_o.id;
-  assign dram_delayed.ar_addr = ar_chan_o.addr;
-  assign dram_delayed.ar_len = ar_chan_o.len;
-  assign dram_delayed.ar_size = ar_chan_o.size;
-  assign dram_delayed.ar_burst = ar_chan_o.burst;
-  assign dram_delayed.ar_lock = ar_chan_o.lock;
-  assign dram_delayed.ar_cache = ar_chan_o.cache;
-  assign dram_delayed.ar_prot = ar_chan_o.prot;
-  assign dram_delayed.ar_qos = ar_chan_o.qos;
+  assign dram_delayed.ar_id     = ar_chan_o.id;
+  assign dram_delayed.ar_addr   = ar_chan_o.addr;
+  assign dram_delayed.ar_len    = ar_chan_o.len;
+  assign dram_delayed.ar_size   = ar_chan_o.size;
+  assign dram_delayed.ar_burst  = ar_chan_o.burst;
+  assign dram_delayed.ar_lock   = ar_chan_o.lock;
+  assign dram_delayed.ar_cache  = ar_chan_o.cache;
+  assign dram_delayed.ar_prot   = ar_chan_o.prot;
+  assign dram_delayed.ar_qos    = ar_chan_o.qos;
   assign dram_delayed.ar_region = ar_chan_o.region;
-  assign dram_delayed.ar_user = '0;
+  assign dram_delayed.ar_user   = '0;
 
   assign dram_delayed.w_data = w_chan_o.data;
   assign dram_delayed.w_strb = w_chan_o.strb;
   assign dram_delayed.w_last = w_chan_o.last;
   assign dram_delayed.w_user = '0;
 
-  assign r_chan_i.id = dram_delayed.r_id;
+  assign r_chan_i.id   = dram_delayed.r_id;
   assign r_chan_i.data = dram_delayed.r_data;
   assign r_chan_i.resp = dram_delayed.r_resp;
   assign r_chan_i.last = dram_delayed.r_last;
-  assign dram.r_user = '0;
+  // assign r_chan_i.  dram.r_user = '0;
 
-  assign b_chan_i.id = dram_delayed.b_id;
+  assign b_chan_i.id   = dram_delayed.b_id;
   assign b_chan_i.resp = dram_delayed.b_resp;
-  assign dram.b_user = '0;
+  // assign dram.b_user = '0;
 
   axi2mem #(
     .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
@@ -603,12 +836,50 @@ module ariane_testharness #(
     AxiIdWidthMstPorts: ariane_soc::IdWidthSlave,   // ==> $clog2(NoSLVPorts) + AxiIdWidthSlvPorts !!
     AxiAddrWidth:       AXI_ADDRESS_WIDTH,          // Axi Address Width
     AxiDataWidth:       AXI_DATA_WIDTH,             // Axi Data Width
-    NoAddrRules:        ariane_soc::NB_PERIPHERALS  // # of Address Rules in the memory map
+    NoAddrRules:        ariane_soc::NB_PERIPHERALS + 1  // # of Address Rules in the memory map
   };
-  localparam axi_pkg::xbar_rule_64_t [ariane_soc::NB_PERIPHERALS] AddrMap = '{
+  // localparam axi_pkg::xbar_rule_64_t [ariane_soc::NB_PERIPHERALS] AddrMap = '{
+  //   '{mst_port_idx: ariane_soc::DRAM,
+  //     start_addr:   ariane_soc::DRAMBase,
+  //     end_addr:     ariane_soc::DRAMBase     + ariane_soc::DRAMLength    },
+  //   '{mst_port_idx: ariane_soc::GPIO,
+  //     start_addr:   ariane_soc::GPIOBase,
+  //     end_addr:     ariane_soc::GPIOBase     + ariane_soc::GPIOLength    },
+  //   '{mst_port_idx: ariane_soc::Ethernet,
+  //     start_addr:   ariane_soc::EthernetBase,
+  //     end_addr:     ariane_soc::EthernetBase + ariane_soc::EthernetLength},
+  //   '{mst_port_idx: ariane_soc::SPI,
+  //     start_addr:   ariane_soc::SPIBase,
+  //     end_addr:     ariane_soc::SPIBase      + ariane_soc::SPILength     },
+  //   '{mst_port_idx: ariane_soc::UART,
+  //     start_addr:   ariane_soc::UARTBase,
+  //     end_addr:     ariane_soc::UARTBase     + ariane_soc::UARTLength    },
+  //   '{mst_port_idx: ariane_soc::PLIC,
+  //     start_addr:   ariane_soc::PLICBase,
+  //     end_addr:     ariane_soc::PLICBase     + ariane_soc::PLICLength    },
+  //   '{mst_port_idx: ariane_soc::CLINT,
+  //     start_addr:   ariane_soc::CLINTBase,
+  //     end_addr:     ariane_soc::CLINTBase    + ariane_soc::CLINTLength   },
+  //   '{mst_port_idx: ariane_soc::ROM,
+  //     start_addr:   ariane_soc::ROMBase,
+  //     end_addr:     ariane_soc::ROMLength    + ariane_soc::ROMLength     },
+  //   '{mst_port_idx: ariane_soc::Debug,
+  //     start_addr:   ariane_soc::DebugBase,
+  //     end_addr:     ariane_soc::DebugBase    + ariane_soc::DebugLength   }
+  // };
+
+  assign mst_ports_resp[ariane_soc::LlcCfg] = '0;
+
+  localparam axi_pkg::xbar_rule_64_t [ariane_soc::NB_PERIPHERALS + 1] AddrMap = '{
     '{mst_port_idx: ariane_soc::DRAM,
       start_addr:   ariane_soc::DRAMBase,
       end_addr:     ariane_soc::DRAMBase     + ariane_soc::DRAMLength    },
+    '{mst_port_idx: ariane_soc::DRAM,
+      start_addr:   ariane_soc::LlcSpmBase,
+      end_addr:     ariane_soc::LlcSpmBase   + ariane_soc::LlcSpmLength  },
+    '{mst_port_idx: ariane_soc::LlcCfg,
+      start_addr:   ariane_soc::LlcCfgBase,
+      end_addr:     ariane_soc::LlcCfgBase   + ariane_soc::LlcCfgLength  },
     '{mst_port_idx: ariane_soc::GPIO,
       start_addr:   ariane_soc::GPIOBase,
       end_addr:     ariane_soc::GPIOBase     + ariane_soc::GPIOLength    },
