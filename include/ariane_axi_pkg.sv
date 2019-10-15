@@ -26,7 +26,9 @@ package ariane_axi;
     localparam DataWidth = 64;
     localparam StrbWidth = DataWidth / 8;
 
-    typedef logic   [IdWidth-1:0]   id_t;
+    typedef logic [ariane_soc::IdWidth-1:0]      id_t;
+    typedef logic [ariane_soc::IdWidthSlave-1:0] id_slv_t;
+    typedef logic [ariane_soc::IdWidthSlave:0]   id_llc_t;
     typedef logic [AddrWidth-1:0] addr_t;
     typedef logic [DataWidth-1:0] data_t;
     typedef logic [StrbWidth-1:0] strb_t;
@@ -48,6 +50,36 @@ package ariane_axi;
         user_t            user;
     } aw_chan_t;
 
+    // AW Channel - Slave
+    typedef struct packed {
+        id_slv_t          id;
+        addr_t            addr;
+        axi_pkg::len_t    len;
+        axi_pkg::size_t   size;
+        axi_pkg::burst_t  burst;
+        logic             lock;
+        axi_pkg::cache_t  cache;
+        axi_pkg::prot_t   prot;
+        axi_pkg::qos_t    qos;
+        axi_pkg::region_t region;
+        axi_pkg::atop_t   atop;
+    } aw_chan_slv_t;
+
+    // AW Channel - Llc
+    typedef struct packed {
+        id_llc_t          id;
+        addr_t            addr;
+        axi_pkg::len_t    len;
+        axi_pkg::size_t   size;
+        axi_pkg::burst_t  burst;
+        logic             lock;
+        axi_pkg::cache_t  cache;
+        axi_pkg::prot_t   prot;
+        axi_pkg::qos_t    qos;
+        axi_pkg::region_t region;
+        axi_pkg::atop_t   atop;
+    } aw_chan_llc_t;
+
     // W Channel - AXI4 doesn't define a wid
     typedef struct packed {
         data_t data;
@@ -62,6 +94,18 @@ package ariane_axi;
         axi_pkg::resp_t resp;
         user_t          user;
     } b_chan_t;
+
+    // B Channel - Slave
+    typedef struct packed {
+        id_slv_t        id;
+        axi_pkg::resp_t resp;
+    } b_chan_slv_t;
+
+    // B Channel - Llc
+    typedef struct packed {
+        id_llc_t        id;
+        axi_pkg::resp_t resp;
+    } b_chan_llc_t;
 
     // AR Channel
     typedef struct packed {
@@ -78,6 +122,34 @@ package ariane_axi;
         user_t            user;
     } ar_chan_t;
 
+    // AR Channel - Slave
+    typedef struct packed {
+        id_slv_t          id;
+        addr_t            addr;
+        axi_pkg::len_t    len;
+        axi_pkg::size_t   size;
+        axi_pkg::burst_t  burst;
+        logic             lock;
+        axi_pkg::cache_t  cache;
+        axi_pkg::prot_t   prot;
+        axi_pkg::qos_t    qos;
+        axi_pkg::region_t region;
+    } ar_chan_slv_t;
+
+    // AR Channel - Llc
+    typedef struct packed {
+        id_llc_t          id;
+        addr_t            addr;
+        axi_pkg::len_t    len;
+        axi_pkg::size_t   size;
+        axi_pkg::burst_t  burst;
+        logic             lock;
+        axi_pkg::cache_t  cache;
+        axi_pkg::prot_t   prot;
+        axi_pkg::qos_t    qos;
+        axi_pkg::region_t region;
+    } ar_chan_llc_t;
+
     // R Channel
     typedef struct packed {
         id_t            id;
@@ -86,6 +158,22 @@ package ariane_axi;
         logic           last;
         user_t          user;
     } r_chan_t;
+
+    // R Channel - Slave
+    typedef struct packed {
+        id_slv_t        id;
+        data_t          data;
+        axi_pkg::resp_t resp;
+        logic           last;
+    } r_chan_slv_t;
+
+    // R Channel - Llc
+    typedef struct packed {
+        id_llc_t        id;
+        data_t          data;
+        axi_pkg::resp_t resp;
+        logic           last;
+    } r_chan_llc_t;
 
     // Request/Response structs
     typedef struct packed {
@@ -109,4 +197,45 @@ package ariane_axi;
         r_chan_t  r;
     } resp_t;
 
+    typedef struct packed {
+        aw_chan_slv_t aw;
+        logic         aw_valid;
+        w_chan_t      w;
+        logic         w_valid;
+        logic         b_ready;
+        ar_chan_slv_t ar;
+        logic         ar_valid;
+        logic         r_ready;
+    } req_slv_t;
+
+    typedef struct packed {
+        logic         aw_ready;
+        logic         ar_ready;
+        logic         w_ready;
+        logic         b_valid;
+        b_chan_slv_t  b;
+        logic         r_valid;
+        r_chan_slv_t  r;
+    } resp_slv_t;
+
+    typedef struct packed {
+        aw_chan_llc_t aw;
+        logic         aw_valid;
+        w_chan_t      w;
+        logic         w_valid;
+        logic         b_ready;
+        ar_chan_llc_t ar;
+        logic         ar_valid;
+        logic         r_ready;
+    } req_llc_t;
+
+    typedef struct packed {
+        logic         aw_ready;
+        logic         ar_ready;
+        logic         w_ready;
+        logic         b_valid;
+        b_chan_llc_t  b;
+        logic         r_valid;
+        r_chan_llc_t  r;
+    } resp_llc_t;
 endpackage
