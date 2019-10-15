@@ -178,6 +178,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/common_cells/src/deprecated/find_first_one.sv                      \
         src/common_cells/src/rstgen_bypass.sv                                  \
         src/common_cells/src/rstgen.sv                                         \
+        src/common_cells/src/id_queue.sv                                       \
         src/common_cells/src/stream_mux.sv                                     \
         src/common_cells/src/stream_demux.sv                                   \
         src/common_cells/src/exp_backoff.sv                                    \
@@ -188,6 +189,8 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/axi/src/axi_cut.sv                                                 \
         src/axi/src/axi_join.sv                                                \
         src/axi/src/axi_delayer.sv                                             \
+        src/axi/src/axi_data_downsize.sv                                       \
+        src/axi/src/axi_data_width_converter.sv                                \
         src/axi/src/axi_to_axi_lite.sv                                         \
         src/fpga-support/rtl/SyncSpRamBeNx64.sv                                \
         src/common_cells/src/unread.sv                                         \
@@ -227,7 +230,36 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         tb/ariane_peripherals.sv                                               \
         tb/common/uart.sv                                                      \
         tb/common/SimDTM.sv                                                    \
-        tb/common/SimJTAG.sv
+        tb/common/SimJTAG.sv                                                   \
+        src/common_cells/src/sub_per_hash.sv                                   \
+        src/common_cells/src/cb_filter.sv                                      \
+        src/common_cells/src/onehot_to_bin.sv                                  \
+        src/llc/include/llc_pkg.sv                                             \
+        src/common_cells/src/cf_math_pkg.sv                                    \
+        src/llc/src/sram_more_macro.sv                                         \
+        src/llc/src/desc_fifo.sv                                               \
+        src/llc/src/eviction_refill/ax_master.sv                               \
+        src/llc/src/eviction_refill/r_master.sv                                \
+        src/llc/src/eviction_refill/w_master.sv                                \
+        src/llc/src/hit_miss_detect/evict_box.sv                               \
+        src/llc/src/hit_miss_detect/lock_box_bloom.sv                          \
+        src/llc/src/hit_miss_detect/miss_counters.sv                           \
+        src/llc/src/hit_miss_detect/tag_pattern_gen.sv                         \
+        src/llc/src/hit_miss_detect/tag_store.sv                               \
+        src/llc/src/burst_cutter.sv                                            \
+        src/llc/src/chan_splitter.sv                                           \
+        src/llc/src/dft_reg.sv                                                 \
+        src/llc/src/data_way.sv                                                \
+        src/llc/src/llc_ways.sv                                                \
+        src/llc/src/merge_unit.sv                                              \
+        src/llc/src/read_unit.sv                                               \
+        src/llc/src/llc_config.sv                                              \
+        src/llc/src/evict_unit.sv                                              \
+        src/llc/src/write_unit.sv                                              \
+        src/llc/src/refill_unit.sv                                             \
+        src/llc/src/hit_miss.sv                                                \
+        src/llc/src/llc.sv
+
 
 src := $(addprefix $(root-dir), $(src))
 
@@ -257,7 +289,7 @@ riscv-benchmarks          := $(shell xargs printf '\n%s' < $(riscv-benchmarks-li
 # Search here for include files (e.g.: non-standalone components)
 incdir := src/common_cells/include/ src/axi/include/
 # Compile and sim flags
-compile_flag     += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive +define+$(defines)
+compile_flag     += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -svinputport=compat -permissive +define+$(defines)
 uvm-flags        += +UVM_NO_RELNOTES +UVM_VERBOSITY=LOW
 questa-flags     += -t 1ns -64 -coverage -classdebug $(gui-sim) $(QUESTASIM_FLAGS)
 compile_flag_vhd += -64 -nologo -quiet -2008
