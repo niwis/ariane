@@ -25,10 +25,10 @@ package ariane_soc;
 
   typedef enum int unsigned {
     DRAM     = 0,
-    GPIO     = 1,
-    Ethernet = 2,
-    SPI      = 3,
-    Timer    = 4,
+    LlcCfg   = 1,
+    GPIO     = 2,
+    Ethernet = 3,
+    SPI      = 4,
     UART     = 5,
     PLIC     = 6,
     CLINT    = 7,
@@ -48,7 +48,9 @@ package ariane_soc;
   localparam logic[63:0] SPILength      = 64'h800000;
   localparam logic[63:0] EthernetLength = 64'h10000;
   localparam logic[63:0] GPIOLength     = 64'h1000;
-  localparam logic[63:0] DRAMLength     = 64'h40000000; // 1GByte of DDR (split between two chips on Genesys2)
+  localparam logic[63:0] LlcCfgLength   = 64'h1000;
+  localparam logic[63:0] LlcSpmLength   = 64'h0020_0000;
+  localparam logic[63:0] DRAMLength     = 64'h4000_0000; // 1GByte of DDR (split between two chips on Genesys2)
   localparam logic[63:0] SRAMLength     = 64'h1800000;  // 24 MByte of SRAM
   // Instantiate AXI protocol checkers
   localparam bit GenProtocolChecker = 1'b0;
@@ -63,11 +65,13 @@ package ariane_soc;
     SPIBase      = 64'h2000_0000,
     EthernetBase = 64'h3000_0000,
     GPIOBase     = 64'h4000_0000,
+    LlcCfgBase   = 64'h5000_0000,
+    LlcSpmBase   = 64'h6000_0000,
     DRAMBase     = 64'h8000_0000
   } soc_bus_start_t;
 
-  localparam NrRegion = 1;
-  localparam logic [NrRegion-1:0][NB_PERIPHERALS-1:0] ValidRule = {{NrRegion * NB_PERIPHERALS}{1'b1}};
+  // localparam NrRegion = 1;
+  // localparam logic [NrRegion-1:0][NB_PERIPHERALS-1:0] ValidRule = {{NrRegion * NB_PERIPHERALS}{1'b1}};
 
   localparam ariane_pkg::ariane_cfg_t ArianeSocCfg = '{
     RASDepth: 2,
