@@ -36,29 +36,23 @@ read_ip { \
 }
 # read_ip xilinx/xlnx_protocol_checker/ip/xlnx_protocol_checker.xci
 
-set_property include_dirs { "src/axi_sd_bridge/include" "../src/common_cells/include" } [current_fileset]
+set_property include_dirs { "src/axi_sd_bridge/include" "../src/common_cells/include" "../src/axi/include" } [current_fileset]
 
 source scripts/add_sources.tcl
 
 set_property top ${project}_xilinx [current_fileset]
 
 if {$::env(BOARD) eq "genesys2"} {
-    read_verilog -sv {src/genesysii.svh ../src/common_cells/include/common_cells/registers.svh}
+    read_verilog -sv {src/genesysii.svh ../src/common_cells/include/common_cells/registers.svh ../src/axi/include/axi/assign.svh ../src/axi/include/axi/typedef.svh}
     set file "src/genesysii.svh"
     set registers "../src/common_cells/include/common_cells/registers.svh"
-} elseif {$::env(BOARD) eq "kc705"} {
-      read_verilog -sv {src/kc705.svh ../src/common_cells/include/common_cells/registers.svh}
-      set file "src/kc705.svh"
-      set registers "../src/common_cells/include/common_cells/registers.svh"
-} elseif {$::env(BOARD) eq "vc707"} {
-      read_verilog -sv {src/vc707.svh ../src/common_cells/include/common_cells/registers.svh}
-      set file "src/vc707.svh"
-      set registers "../src/common_cells/include/common_cells/registers.svh"
+    set axi_assign " ../src/axi/include/axi/assign.svh"
+    set axi_typedef " ../src/axi/include/axi/typedef.svh"
 } else {
     exit 1
 }
 
-set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file" "$registers"]]
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file" "*$registers" "*$axi_assign" "*$axi_typedef"]]
 set_property -dict { file_type {Verilog Header} is_global_include 1} -objects $file_obj
 
 update_compile_order -fileset sources_1
