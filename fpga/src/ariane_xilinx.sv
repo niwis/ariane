@@ -278,6 +278,9 @@ localparam axi_pkg::xbar_rule_64_t [ariane_soc::NB_PERIPHERALS + 1] AddrMap = '{
   '{mst_port_idx: ariane_soc::LlcCfg,
     start_addr:   ariane_soc::LlcCfgBase,
     end_addr:     ariane_soc::LlcCfgBase   + ariane_soc::LlcCfgLength  },
+  //'{mst_port_idx: ariane_soc::LlcMon,
+  //  start_addr:   ariane_soc::LlcMonBase,
+  //  end_addr:     ariane_soc::LlcMonBase   + ariane_soc::LlcMonLength  },
   '{mst_port_idx: ariane_soc::GPIO,
     start_addr:   ariane_soc::GPIOBase,
     end_addr:     ariane_soc::GPIOBase     + ariane_soc::GPIOLength    },
@@ -1063,8 +1066,8 @@ axi_riscv_atomics #(
   // assign mst_ports_resp[ariane_soc::LlcCfg] = '0;
 
   llc #(
-    .SetAssociativity( 8                         ),
-    .NoLines         ( 1028                      ),
+    .SetAssociativity( 64                        ),
+    .NoLines         ( 64                        ),
     .NoBlocks        ( 8                         ),
     .AxiCfg          ( LlcAxiCfg                 ),
     .SPM_BASE        ( ariane_soc::LlcSpmBase    ),
@@ -1105,6 +1108,164 @@ axi_riscv_atomics #(
     .conf_resp_o ( llc_cfg_resp   )
   );
 
+
+  // performance monitor for the LLC
+//  logic        llc_mon_apb_penable;
+//  logic        llc_mon_apb_pwrite;
+//  logic [31:0] llc_mon_apb_paddr;
+//  logic        llc_mon_apb_psel;
+//  logic [31:0] llc_mon_apb_pwdata;
+//  logic [31:0] llc_mon_apb_prdata;
+//  logic        llc_mon_apb_pready;
+//  logic        llc_mon_apb_pslverr;
+//
+//  axi2apb_64_32  #(
+//      .AXI4_ADDRESS_WIDTH ( AxiAddrWidth     ),
+//      .AXI4_RDATA_WIDTH   ( AxiDataWidth     ),
+//      .AXI4_WDATA_WIDTH   ( AxiDataWidth     ),
+//      .AXI4_ID_WIDTH      ( AxiIdWidthSlaves ),
+//      .AXI4_USER_WIDTH    ( AxiUserWidth     ),
+//
+//      .BUFF_DEPTH_SLAVE   ( 2              ),
+//      .APB_ADDR_WIDTH     ( 32'd32         )
+//  ) i_llc_axi_perf_mon_axi2apb (
+//      .ACLK       ( clk                    ),
+//      .ARESETn    ( ndmreset_n             ),
+//      .test_en_i  ( test_en                ),
+//
+//      .AWID_i     ( mst_ports_req[ariane_soc::LlcMon].aw.id        ),
+//      .AWADDR_i   ( mst_ports_req[ariane_soc::LlcMon].aw.addr      ),
+//      .AWLEN_i    ( mst_ports_req[ariane_soc::LlcMon].aw.len       ),
+//      .AWSIZE_i   ( mst_ports_req[ariane_soc::LlcMon].aw.size      ),
+//      .AWBURST_i  ( mst_ports_req[ariane_soc::LlcMon].aw.burst     ),
+//      .AWLOCK_i   ( mst_ports_req[ariane_soc::LlcMon].aw.lock      ),
+//      .AWCACHE_i  ( mst_ports_req[ariane_soc::LlcMon].aw.cache     ),
+//      .AWPROT_i   ( mst_ports_req[ariane_soc::LlcMon].aw.prot      ),
+//      .AWREGION_i ( mst_ports_req[ariane_soc::LlcMon].aw.region    ),
+//      .AWUSER_i   ( '0                                             ),
+//      .AWQOS_i    ( mst_ports_req[ariane_soc::LlcMon].aw.qos       ),
+//      .AWVALID_i  ( mst_ports_req[ariane_soc::LlcMon].aw_valid     ),
+//      .AWREADY_o  ( mst_ports_resp[ariane_soc::LlcMon].aw_ready    ),
+//
+//      .WDATA_i    ( mst_ports_req[ariane_soc::LlcMon].w.data       ),
+//      .WSTRB_i    ( mst_ports_req[ariane_soc::LlcMon].w.strb       ),
+//      .WLAST_i    ( mst_ports_req[ariane_soc::LlcMon].w.last       ),
+//      .WUSER_i    ( '0                                             ),
+//      .WVALID_i   ( mst_ports_req[ariane_soc::LlcMon].w_valid      ),
+//      .WREADY_o   ( mst_ports_resp[ariane_soc::LlcMon].w_ready     ),
+//
+//      .BID_o      ( mst_ports_resp[ariane_soc::LlcMon].b.id        ),
+//      .BRESP_o    ( mst_ports_resp[ariane_soc::LlcMon].b.resp      ),
+//      .BVALID_o   ( mst_ports_resp[ariane_soc::LlcMon].b_valid     ),
+//      .BUSER_o    ( /* not used */                                 ),
+//      .BREADY_i   ( mst_ports_req[ariane_soc::LlcMon].b_ready      ),
+//
+//      .ARID_i     ( mst_ports_req[ariane_soc::LlcMon].ar.id        ),
+//      .ARADDR_i   ( mst_ports_req[ariane_soc::LlcMon].ar.addr      ),
+//      .ARLEN_i    ( mst_ports_req[ariane_soc::LlcMon].ar.len       ),
+//      .ARSIZE_i   ( mst_ports_req[ariane_soc::LlcMon].ar.size      ),
+//      .ARBURST_i  ( mst_ports_req[ariane_soc::LlcMon].ar.burst     ),
+//      .ARLOCK_i   ( mst_ports_req[ariane_soc::LlcMon].ar.lock      ),
+//      .ARCACHE_i  ( mst_ports_req[ariane_soc::LlcMon].ar.cache     ),
+//      .ARPROT_i   ( mst_ports_req[ariane_soc::LlcMon].ar.prot      ),
+//      .ARREGION_i ( mst_ports_req[ariane_soc::LlcMon].ar.region    ),
+//      .ARUSER_i   ( '0                                             ),
+//      .ARQOS_i    ( mst_ports_req[ariane_soc::LlcMon].ar.qos       ),
+//      .ARVALID_i  ( mst_ports_req[ariane_soc::LlcMon].ar_valid     ),
+//      .ARREADY_o  ( mst_ports_resp[ariane_soc::LlcMon].ar_ready    ),
+//
+//      .RID_o      ( mst_ports_resp[ariane_soc::LlcMon].r.id        ),
+//      .RDATA_o    ( mst_ports_resp[ariane_soc::LlcMon].r.data      ),
+//      .RRESP_o    ( mst_ports_resp[ariane_soc::LlcMon].r.resp      ),
+//      .RLAST_o    ( mst_ports_resp[ariane_soc::LlcMon].r.last      ),
+//      .RUSER_o    ( /* not used */                                 ),
+//      .RVALID_o   ( mst_ports_resp[ariane_soc::LlcMon].r_valid     ),
+//      .RREADY_i   ( mst_ports_req[ariane_soc::LlcMon].r_ready      ),
+//
+//      .PENABLE    ( llc_mon_apb_penable    ),
+//      .PWRITE     ( llc_mon_apb_pwrite     ),
+//      .PADDR      ( llc_mon_apb_paddr      ),
+//      .PSEL       ( llc_mon_apb_psel       ),
+//      .PWDATA     ( llc_mon_apb_pwdata     ),
+//      .PRDATA     ( llc_mon_apb_prdata     ),
+//      .PREADY     ( llc_mon_apb_pready     ),
+//      .PSLVERR    ( llc_mon_apb_pslverr    )
+//  );
+//
+//  axi_perf_mon #(
+//     // Number of monitored AXI interfaces
+//    .N_MON  ( 32'd2                 ),
+//     // ID width of the monitored AXI interfaces
+//    .IW     ( LlcAxiCfg.MstPortIdWidth ), // extend the slv port!
+//    // Capabilities of all interface monitors
+//    .CAP_HS        ( 1'b1   ),   // handshakes
+//    .CAP_FL_TXN    ( 1'b1   ),   // transactions in flight
+//    .CAP_FL_DAT    ( 1'b1   ),   // data bytes in flight
+//    .CAP_TX_DAT    ( 1'b1   ),   // data transferred
+//    .CAP_STALL     ( 1'b1   ),   // stalls
+//    .CAP_RT        ( 1'b1   ),   // round trips
+//    .CAP_EXCL      ( 1'b0   ),   // exclusive accesses
+//    .CAP_ATOP      ( 1'b0   ),   // atomic transactions
+//    // Counter widths for all interface monitors
+//    .CW_CLK        ( 32'd42 ),
+//    .CW_HS_CMD     ( 32'd42 ),
+//    .CW_HS_DAT     ( 32'd42 ),
+//    .CW_FL_TXN_ACC ( 32'd42 ),
+//    .CW_FL_TXN_MAX ( 32'd42 ),
+//    .CW_FL_DAT_ACC ( 32'd42 ),
+//    .CW_FL_DAT_MAX ( 32'd42 ),
+//    .CW_TX_DAT     ( 32'd42 ),
+//    .CW_STALL_CMD  ( 32'd42 ),
+//    .CW_STALL_DAT  ( 32'd42 ),
+//    .CW_STALL_MAX  ( 32'd42 ),
+//    .CW_RT_ACC     ( 32'd42 ),
+//    .CW_RT_MAX     ( 32'd42 ),
+//    .CW_EXCL       ( 32'd42 ),
+//    .CW_ATOP       ( 32'd42 ),
+//    // Protocol compliance assertions
+//    .ASSERTIONS    ( 1'b1 )
+//  ) i_llc_axi_perf_mon (
+//    // APB Readout and Control Interface
+//    .pclk_i    ( clk                 ),
+//    .preset_ni ( ndmreset_n          ),
+//    .paddr_i   ( llc_mon_apb_paddr   ), // 32 bit
+//    .pprot_i   ( '0                  ), //  3 bit
+//    .psel_i    ( llc_mon_apb_psel    ),
+//    .penable_i ( llc_mon_apb_penable ),
+//    .pwrite_i  ( llc_mon_apb_pwrite  ),
+//    .pwdata_i  ( llc_mon_apb_pwdata  ), // 32 bit
+//    .pstrb_i   ( '1                  ), //  4 bit
+//    .pready_o  ( llc_mon_apb_pready  ),
+//    .prdata_o  ( llc_mon_apb_prdata  ), // 32 bit
+//    .pslverr_o ( llc_mon_apb_pslverr ),
+//    // Monitored AXI Interfaces
+//    .clk_axi_i  ({       clk_i,             clk_i              }),
+//    .rst_axi_ni ({       rst_ni,            rst_ni             }),
+//    .ar_id_i    ({{1'b0, llc_req.ar.id},    dram_req.ar.id     }),
+//    .ar_len_i   ({       llc_req.ar.len,    dram_req.ar.len    }),
+//    .ar_size_i  ({       llc_req.ar.size,   dram_req.ar.size   }),
+//    .ar_lock_i  ({       llc_req.ar.lock,   dram_req.ar.lock   }),
+//    .ar_valid_i ({       llc_req.ar_valid,  dram_req.ar_valid  }),
+//    .ar_ready_i ({       llc_resp.ar_ready, dram_resp.ar_ready }),
+//    .aw_id_i    ({{1'b0, llc_req.aw.id},    dram_req.aw.id     }),
+//    .aw_len_i   ({       llc_req.aw.len,    dram_req.aw.len    }),
+//    .aw_size_i  ({       llc_req.aw.size,   dram_req.aw.size   }),
+//    .aw_lock_i  ({       llc_req.aw.lock,   dram_req.aw.lock   }),
+//    .aw_atop_i  ( '0                                            ),
+//    .aw_valid_i ({       llc_req.aw_valid,  dram_req.aw_valid  }),
+//    .aw_ready_i ({       llc_resp.aw_ready, dram_resp.aw_ready }),
+//    .r_id_i     ({{1'b0, llc_resp.r.id},    dram_resp.r.id     }),
+//    .r_last_i   ({       llc_resp.r.last,   dram_resp.r.last   }),
+//    .r_valid_i  ({       llc_resp.r_valid,  dram_resp.r_valid  }),
+//    .r_ready_i  ({       llc_req.r_ready,   dram_req.r_ready   }),
+//    .w_last_i   ({       llc_req.w.last,    dram_req.w.last    }),
+//    .w_valid_i  ({       llc_req.w_valid,   dram_req.w_valid   }),
+//    .w_ready_i  ({       llc_resp.w_ready,  dram_resp.w_ready  }),
+//    .b_id_i     ({{1'b0, llc_resp.b.id},    dram_resp.b.id     }),
+//    .b_resp_i   ({       llc_resp.b.resp,   dram_resp.b.resp   }),
+//    .b_valid_i  ({       llc_resp.b_valid,  dram_resp.b_valid  }),
+//    .b_ready_i  ({       llc_req.b_ready,   dram_req.b_ready   })
+//  );
 
 `ifdef PROTOCOL_CHECKER
 logic pc_status;
