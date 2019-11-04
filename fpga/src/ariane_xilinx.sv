@@ -1101,7 +1101,7 @@ axi_riscv_atomics #(
     .mst_req_o   ( dram_del_req   ),
     .mst_resp_i  ( dram_del_resp  ),
     .conf_req_i  ( llc_cfg_req    ),
-    .conf_resp_o ( llc_cfg_resp   )
+    .conf_resp_o ( llc_cfg_resp   ),
     .ram_start_addr_i ( ariane_soc::DRAMBase                            ),
     .ram_end_addr_i   ( ariane_soc::DRAMBase   + ariane_soc::DRAMLength ),
     .spm_start_addr_i ( ariane_soc::LlcSpmBase                          ),
