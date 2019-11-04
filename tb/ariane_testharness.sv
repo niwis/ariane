@@ -580,11 +580,6 @@ module ariane_testharness #(
     .NoLines         ( 1024                      ),
     .NoBlocks        ( 8                         ),
     .AxiCfg          ( LlcAxiCfg                 ),
-    .SPM_BASE        ( 64'h0000_0000             ),
-    .RAM_BASE        ( ariane_soc::DRAMBase      ),
-    .SPM_LENGTH      ( 64'h0020_0000             ),
-    .RAM_LENGTH      ( ariane_soc::DRAMLength    ),
-    .CFG_BASE        ( 64'h0000_0000             ),
     .slv_aw_chan_t   ( ariane_axi::aw_chan_slv_t ),
     .mst_aw_chan_t   ( ariane_axi::aw_chan_slv_t ),
     .w_chan_t        ( ariane_axi::w_chan_t      ),
@@ -605,7 +600,8 @@ module ariane_testharness #(
     .lite_r_chan_t   ( r_chan_lite_t             ),
     .lite_req_t      ( req_lite_t                ),
     .lite_resp_t     ( resp_lite_t               ),
-    .rule_t          ( axi_pkg::xbar_rule_64_t   )
+    .rule_full_t     ( axi_pkg::xbar_rule_64_t   )
+    .rule_lite_t     ( axi_pkg::xbar_rule_64_t   )
   ) i_llc (
     .clk_i       ( clk_i          ),
     .rst_ni      ( ndmreset_n     ),
@@ -616,6 +612,10 @@ module ariane_testharness #(
     .mst_resp_i  ( dram_resp      ),
     .conf_req_i  ( '0             ),
     .conf_resp_o (                )
+    .ram_start_addr_i ( ariane_soc::DRAMBase                            ),
+    .ram_end_addr_i   ( ariane_soc::DRAMBase   + ariane_soc::DRAMLength ),
+    .spm_start_addr_i ( ariane_soc::LlcSpmBase                          ),
+    .cfg_start_addr_i ( ariane_soc::LlcCfgBase                          )
   );
 
   //axi_riscv_atomics_wrap #(
