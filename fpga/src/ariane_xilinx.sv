@@ -803,9 +803,9 @@ logic                        s_axi_rready;
 //) dram();
 
 ariane_axi::req_slv_t  llc_req;
-ariane_axi::req_llc_t  dram_req;
+ariane_axi::req_llc_t  dram_req,  dram_del_req;
 ariane_axi::resp_slv_t llc_resp;
-ariane_axi::resp_llc_t dram_resp;
+ariane_axi::resp_llc_t dram_resp, dram_del_resp;
 
 axi_riscv_atomics #(
     .AXI_ADDR_WIDTH    ( AxiAddrWidth        ),
@@ -1066,15 +1066,10 @@ axi_riscv_atomics #(
   // assign mst_ports_resp[ariane_soc::LlcCfg] = '0;
 
   llc #(
-    .SetAssociativity( 64                        ),
-    .NoLines         ( 64                        ),
-    .NoBlocks        ( 8                         ),
+    .SetAssociativity( 8                         ),
+    .NoLines         ( 1024                      ),
+    .NoBlocks        ( 16                        ),
     .AxiCfg          ( LlcAxiCfg                 ),
-    .SPM_BASE        ( ariane_soc::LlcSpmBase    ),
-    .RAM_BASE        ( ariane_soc::DRAMBase      ),
-    .SPM_LENGTH      ( ariane_soc::LlcSpmLength  ),
-    .RAM_LENGTH      ( ariane_soc::DRAMLength    ),
-    .CFG_BASE        ( ariane_soc::LlcCfgBase    ),
     .slv_aw_chan_t   ( ariane_axi::aw_chan_slv_t ),
     .mst_aw_chan_t   ( ariane_axi::aw_chan_llc_t ),
     .w_chan_t        ( ariane_axi::w_chan_t      ),
@@ -1095,18 +1090,208 @@ axi_riscv_atomics #(
     .lite_r_chan_t   ( r_chan_lite_t             ),
     .lite_req_t      ( req_lite_t                ),
     .lite_resp_t     ( resp_lite_t               ),
-    .rule_t          ( axi_pkg::xbar_rule_64_t   )
+    .rule_full_t     ( axi_pkg::xbar_rule_64_t   ),
+    .rule_lite_t     ( axi_pkg::xbar_rule_64_t   )
   ) i_llc (
     .clk_i       ( clk            ),
     .rst_ni      ( ndmreset_n     ),
     .test_i      ( test_en        ),
     .slv_req_i   ( llc_req        ),
     .slv_resp_o  ( llc_resp       ),
-    .mst_req_o   ( dram_req       ),
-    .mst_resp_i  ( dram_resp      ),
+    .mst_req_o   ( dram_del_req   ),
+    .mst_resp_i  ( dram_del_resp  ),
     .conf_req_i  ( llc_cfg_req    ),
     .conf_resp_o ( llc_cfg_resp   )
+    .ram_start_addr_i ( ariane_soc::DRAMBase                            ),
+    .ram_end_addr_i   ( ariane_soc::DRAMBase   + ariane_soc::DRAMLength ),
+    .spm_start_addr_i ( ariane_soc::LlcSpmBase                          ),
+    .cfg_start_addr_i ( ariane_soc::LlcCfgBase                          )
   );
+
+  // axi delayer for test
+//axi_delayer #(
+//  .aw_t ( ariane_axi::aw_chan_llc_t ),
+//  .w_t  ( ariane_axi::w_chan_t      ),
+//  .b_t  ( ariane_axi::b_chan_llc_t  ),
+//  .ar_t ( ariane_axi::ar_chan_llc_t ),
+//  .r_t  ( ariane_axi::r_chan_llc_t  ),
+//  .StallRandomOutput (  1'b0   ),
+//  .StallRandomInput  (  1'b0   ),
+//  .FixedDelayInput   ( 32'd63  ),
+//  .FixedDelayOutput  ( 32'd63  )
+//) i_dram_delay (
+//  .clk_i  ( clk        ),   // Clock
+//  .rst_ni ( ndmreset_n ),   // Asynchronous reset active low
+//  // input side
+//  .aw_valid_i ( dram_del_req.aw_valid  ),
+//  .aw_chan_i  ( dram_del_req.aw        ),
+//  .aw_ready_o ( dram_del_resp.aw_ready ),
+
+//  .w_valid_i  ( dram_del_req.w_valid   ),
+//  .w_chan_i   ( dram_del_req.w         ),
+//  .w_ready_o  ( dram_del_resp.w_ready  ),
+
+//  .b_valid_o  ( dram_del_resp.b_valid  ),
+//  .b_chan_o   ( dram_del_resp.b        ),
+//  .b_ready_i  ( dram_del_req.b_ready   ),
+
+//  .ar_valid_i ( dram_del_req.ar_valid  ),
+//  .ar_chan_i  ( dram_del_req.ar        ),
+//  .ar_ready_o ( dram_del_resp.ar_ready ),
+
+//  .r_valid_o  ( dram_del_resp.r_valid  ),
+//  .r_chan_o   ( dram_del_resp.r        ),
+//  .r_ready_i  ( dram_del_req.r_ready   ),
+
+//  // output side
+//  .aw_valid_o ( dram_req.aw_valid  ),
+//  .aw_chan_o  ( dram_req.aw        ),
+//  .aw_ready_i ( dram_resp.aw_ready ),
+
+//  .w_valid_o  ( dram_req.w_valid   ),
+//  .w_chan_o   ( dram_req.w         ),
+//  .w_ready_i  ( dram_resp.w_ready  ),
+
+//  .b_valid_i  ( dram_resp.b_valid  ),
+//  .b_chan_i   ( dram_resp.b        ),
+//  .b_ready_o  ( dram_req.b_ready   ),
+
+//  .ar_valid_o ( dram_req.ar_valid  ),
+//  .ar_chan_o  ( dram_req.ar        ),
+//  .ar_ready_i ( dram_resp.ar_ready ),
+
+//  .r_valid_i  ( dram_resp.r_valid  ),
+//  .r_chan_i   ( dram_resp.r        ),
+//  .r_ready_o  ( dram_req.r_ready   )
+//);
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH( AxiAddrWidth         ),
+    .AXI_DATA_WIDTH( AxiDataWidth         ),
+    .AXI_ID_WIDTH  ( AxiIdWidthSlaves + 1 ),
+    .AXI_USER_WIDTH( AxiUserWidth         )
+  ) llc_2_delay ();
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH( AxiAddrWidth         ),
+    .AXI_DATA_WIDTH( AxiDataWidth         ),
+    .AXI_ID_WIDTH  ( AxiIdWidthSlaves + 1 ),
+    .AXI_USER_WIDTH( AxiUserWidth         )
+  ) delay_2_dram ();
+
+  axi_multicut #(
+  /// The address width.
+    .ADDR_WIDTH ( AxiAddrWidth         ),
+  /// The data width.
+    .DATA_WIDTH ( AxiDataWidth         ),
+  /// The ID width.
+    .ID_WIDTH   ( AxiIdWidthSlaves + 1 ),
+  // The user data width.
+    .USER_WIDTH ( AxiUserWidth         ),
+  // The number of cuts. Must be >= 0.
+    .NUM_CUTS   ( 32'd18               )
+  ) i_dram_delay (
+    .clk_i ( clk          ),
+    .rst_ni( ndmreset_n   ),
+    .in    ( llc_2_delay  ),
+    .out   ( delay_2_dram )
+  );
+
+  assign llc_2_delay.aw_id      = dram_del_req.aw.id    ;
+  assign llc_2_delay.aw_addr    = dram_del_req.aw.addr  ;
+  assign llc_2_delay.aw_len     = dram_del_req.aw.len   ;
+  assign llc_2_delay.aw_size    = dram_del_req.aw.size  ;
+  assign llc_2_delay.aw_burst   = dram_del_req.aw.burst ;
+  assign llc_2_delay.aw_lock    = dram_del_req.aw.lock  ;
+  assign llc_2_delay.aw_cache   = dram_del_req.aw.cache ;
+  assign llc_2_delay.aw_prot    = dram_del_req.aw.prot  ;
+  assign llc_2_delay.aw_qos     = dram_del_req.aw.qos   ;
+  assign llc_2_delay.aw_region  = dram_del_req.aw.region;
+  assign llc_2_delay.aw_atop    = dram_del_req.aw.atop  ;
+  assign llc_2_delay.aw_user    = '0                    ;
+  assign llc_2_delay.aw_valid   = dram_del_req.aw_valid ;
+  assign dram_del_resp.aw_ready = llc_2_delay.aw_ready  ;
+
+  assign llc_2_delay.w_data     = dram_del_req.w.data   ;
+  assign llc_2_delay.w_strb     = dram_del_req.w.strb   ;
+  assign llc_2_delay.w_last     = dram_del_req.w.last   ;
+  assign llc_2_delay.w_user     = '0                    ;
+  assign llc_2_delay.w_valid    = dram_del_req.w_valid  ;
+  assign dram_del_resp.w_ready  = llc_2_delay.w_ready   ;
+
+  assign dram_del_resp.b.id     = llc_2_delay.b_id      ;
+  assign dram_del_resp.b.resp   = llc_2_delay.b_resp    ;
+  assign dram_del_resp.b_valid  = llc_2_delay.b_valid   ;
+  assign llc_2_delay.b_ready    = dram_del_req.b_ready  ;
+
+  assign llc_2_delay.ar_id      = dram_del_req.ar.id    ;
+  assign llc_2_delay.ar_addr    = dram_del_req.ar.addr  ;
+  assign llc_2_delay.ar_len     = dram_del_req.ar.len   ;
+  assign llc_2_delay.ar_size    = dram_del_req.ar.size  ;
+  assign llc_2_delay.ar_burst   = dram_del_req.ar.burst ;
+  assign llc_2_delay.ar_lock    = dram_del_req.ar.lock  ;
+  assign llc_2_delay.ar_cache   = dram_del_req.ar.cache ;
+  assign llc_2_delay.ar_prot    = dram_del_req.ar.prot  ;
+  assign llc_2_delay.ar_qos     = dram_del_req.ar.qos   ;
+  assign llc_2_delay.ar_region  = dram_del_req.ar.region;
+  assign llc_2_delay.ar_user    = '0                    ;
+  assign llc_2_delay.ar_valid   = dram_del_req.ar_valid ;
+  assign dram_del_resp.ar_ready = llc_2_delay.ar_ready  ;
+
+  assign dram_del_resp.r.id     = llc_2_delay.r_id      ;
+  assign dram_del_resp.r.data   = llc_2_delay.r_data    ;
+  assign dram_del_resp.r.resp   = llc_2_delay.r_resp    ;
+  assign dram_del_resp.r.last   = llc_2_delay.r_last    ;
+  assign dram_del_resp.r_valid  = llc_2_delay.r_valid   ;
+  assign llc_2_delay.r_ready    = dram_del_req.r_ready  ;
+
+
+  assign dram_req.aw.id         = delay_2_dram.aw_id     ;
+  assign dram_req.aw.addr       = delay_2_dram.aw_addr   ;
+  assign dram_req.aw.len        = delay_2_dram.aw_len    ;
+  assign dram_req.aw.size       = delay_2_dram.aw_size   ;
+  assign dram_req.aw.burst      = delay_2_dram.aw_burst  ;
+  assign dram_req.aw.lock       = delay_2_dram.aw_lock   ;
+  assign dram_req.aw.cache      = delay_2_dram.aw_cache  ;
+  assign dram_req.aw.prot       = delay_2_dram.aw_prot   ;
+  assign dram_req.aw.qos        = delay_2_dram.aw_qos    ;
+  assign dram_req.aw.region     = delay_2_dram.aw_region ;
+  assign dram_req.aw.atop       = delay_2_dram.aw_atop   ;
+  assign dram_req.aw_valid      = delay_2_dram.aw_valid  ;
+  assign delay_2_dram.aw_ready  = dram_resp.aw_ready     ;
+
+  assign dram_req.w.data        = delay_2_dram.w_data    ;
+  assign dram_req.w.strb        = delay_2_dram.w_strb    ;
+  assign dram_req.w.last        = delay_2_dram.w_last    ;
+  assign dram_req.w_valid       = delay_2_dram.w_valid   ;
+  assign delay_2_dram.w_ready   = dram_resp.w_ready      ;
+
+  assign delay_2_dram.b_id      = dram_resp.b.id         ;
+  assign delay_2_dram.b_resp    = dram_resp.b.resp       ;
+  assign delay_2_dram.b_user    = '0                     ;
+  assign delay_2_dram.b_valid   = dram_resp.b_valid      ;
+  assign dram_req.b_ready       = delay_2_dram.b_ready   ;
+
+  assign dram_req.ar.id         = delay_2_dram.ar_id     ;
+  assign dram_req.ar.addr       = delay_2_dram.ar_addr   ;
+  assign dram_req.ar.len        = delay_2_dram.ar_len    ;
+  assign dram_req.ar.size       = delay_2_dram.ar_size   ;
+  assign dram_req.ar.burst      = delay_2_dram.ar_burst  ;
+  assign dram_req.ar.lock       = delay_2_dram.ar_lock   ;
+  assign dram_req.ar.cache      = delay_2_dram.ar_cache  ;
+  assign dram_req.ar.prot       = delay_2_dram.ar_prot   ;
+  assign dram_req.ar.qos        = delay_2_dram.ar_qos    ;
+  assign dram_req.ar.region     = delay_2_dram.ar_region ;
+  assign dram_req.ar_valid      = delay_2_dram.ar_valid  ;
+  assign delay_2_dram.ar_ready  = dram_resp.ar_ready     ;
+
+  assign delay_2_dram.r_id      = dram_resp.r.id         ;
+  assign delay_2_dram.r_data    = dram_resp.r.data       ;
+  assign delay_2_dram.r_resp    = dram_resp.r.resp       ;
+  assign delay_2_dram.r_last    = dram_resp.r.last       ;
+  assign delay_2_dram.r_user    = '0;
+  assign delay_2_dram.r_valid   = dram_resp.r_valid      ;
+  assign dram_req.r_ready       = delay_2_dram.r_ready   ;
 
 
   // performance monitor for the LLC

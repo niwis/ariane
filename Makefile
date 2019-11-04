@@ -101,7 +101,8 @@ util := include/instr_tracer_pkg.sv                         \
         src/util/instr_tracer.sv                            \
         src/tech_cells_generic/src/cluster_clock_gating.sv  \
         tb/common/mock_uart.sv                              \
-        src/util/sram.sv
+        src/util/sram.sv                                    \
+        src/llc/tb/sram_llc_func.sv
 
 ifdef spike-tandem
     util += tb/common/spike.sv
@@ -172,7 +173,6 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/riscv-dbg/src/dm_top.sv                                            \
         src/riscv-dbg/debug_rom/debug_rom.sv                                   \
         src/register_interface/src/apb_to_reg.sv                               \
-        src/axi/src/axi_multicut.sv                                            \
         src/common_cells/src/deprecated/generic_fifo.sv                        \
         src/common_cells/src/deprecated/pulp_sync.sv                           \
         src/common_cells/src/deprecated/find_first_one.sv                      \
@@ -187,6 +187,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/util/axi_master_connect_rev.sv                                     \
         src/util/axi_slave_connect_rev.sv                                      \
         src/axi/src/axi_cut.sv                                                 \
+        src/axi/src/axi_multicut.sv                                            \
         src/axi/src/axi_join.sv                                                \
         src/axi/src/axi_delayer.sv                                             \
         src/axi/src/axi_data_downsize.sv                                       \
@@ -215,6 +216,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/common_cells/src/stream_register.sv                                \
         src/common_cells/src/counter.sv                                        \
         src/common_cells/src/delta_counter.sv                                  \
+        src/common_cells/src/max_counter.sv                                    \
         src/common_cells/src/shift_reg.sv                                      \
         src/axi/src/axi_addr_decode.sv                                         \
         src/axi/src/axi_atop_filter.sv                                         \
@@ -223,6 +225,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/axi/src/axi_mux.sv                                                 \
         src/axi/src/axi_decerr_slv.sv                                          \
         src/axi/src/axi_xbar.sv                                                \
+        src/axi/src/axi_perf_mon.sv                                            \
         src/tech_cells_generic/src/pulp_clock_gating.sv                        \
         src/tech_cells_generic/src/cluster_clock_inverter.sv                   \
         src/tech_cells_generic/src/pulp_clock_mux2.sv                          \
@@ -236,7 +239,6 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/common_cells/src/onehot_to_bin.sv                                  \
         src/llc/include/llc_pkg.sv                                             \
         src/common_cells/src/cf_math_pkg.sv                                    \
-        src/llc/src/sram_more_macro.sv                                         \
         src/llc/src/desc_fifo.sv                                               \
         src/llc/src/eviction_refill/ax_master.sv                               \
         src/llc/src/eviction_refill/r_master.sv                                \
@@ -760,12 +762,14 @@ fpga_filter += $(addprefix $(root-dir), src/util/ex_trace_item.sv)
 fpga_filter += $(addprefix $(root-dir), src/util/instr_trace_item.sv)
 fpga_filter += $(addprefix $(root-dir), src/util/instr_tracer_if.sv)
 fpga_filter += $(addprefix $(root-dir), src/util/instr_tracer.sv)
+fpga_filter += $(addprefix $(root-dir), src/llc/tb/sram_llc_func.sv)
 
 fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(uart_src)
 	@echo "[FPGA] Generate sources"
 	@echo read_vhdl        {$(uart_src)}    > fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(ariane_pkg)} >> fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(util))}     >> fpga/scripts/add_sources.tcl
+	@echo read_verilog -sv {$(addprefix $(root-dir), src/llc/fpga/sourcecode/sram_llc_xilinx.sv)}  >> fpga/scripts/add_sources.tcl 
 	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src))} 	   >> fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(fpga_src)}   >> fpga/scripts/add_sources.tcl
 	@echo "[FPGA] Generate Bitstream"
