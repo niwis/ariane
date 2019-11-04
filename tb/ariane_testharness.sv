@@ -516,8 +516,8 @@ module ariane_testharness #(
     .mst_b_ready_o   ( llc_req.b_ready   )
   );
 
-  ariane_axi::req_slv_t  dram_req;
-  ariane_axi::resp_slv_t dram_resp;
+  ariane_axi::req_llc_t  dram_req;
+  ariane_axi::resp_llc_t dram_resp;
 
   //TODO: put llc here
   //assign dram_req = llc_req;
@@ -525,7 +525,7 @@ module ariane_testharness #(
 
   localparam llc_pkg::llc_axi_cfg_t LlcAxiCfg = '{
     SlvPortIdWidth:    ariane_soc::IdWidthSlave,
-    MstPortIdWidth:    ariane_soc::IdWidthSlave,
+    MstPortIdWidth:    ariane_soc::IdWidthSlave + 1,
     AddrWidthFull:     AXI_ADDRESS_WIDTH,
     DataWidthFull:     AXI_DATA_WIDTH,
     LitePortAddrWidth: AXI_ADDRESS_WIDTH,
@@ -581,18 +581,18 @@ module ariane_testharness #(
     .NoBlocks        ( 8                         ),
     .AxiCfg          ( LlcAxiCfg                 ),
     .slv_aw_chan_t   ( ariane_axi::aw_chan_slv_t ),
-    .mst_aw_chan_t   ( ariane_axi::aw_chan_slv_t ),
+    .mst_aw_chan_t   ( ariane_axi::aw_chan_llc_t ),
     .w_chan_t        ( ariane_axi::w_chan_t      ),
     .slv_b_chan_t    ( ariane_axi::b_chan_slv_t  ),
-    .mst_b_chan_t    ( ariane_axi::b_chan_slv_t  ),
+    .mst_b_chan_t    ( ariane_axi::b_chan_llc_t  ),
     .slv_ar_chan_t   ( ariane_axi::ar_chan_slv_t ),
-    .mst_ar_chan_t   ( ariane_axi::ar_chan_slv_t ),
+    .mst_ar_chan_t   ( ariane_axi::ar_chan_llc_t ),
     .slv_r_chan_t    ( ariane_axi::r_chan_slv_t  ),
-    .mst_r_chan_t    ( ariane_axi::r_chan_slv_t  ),
+    .mst_r_chan_t    ( ariane_axi::r_chan_llc_t  ),
     .slv_req_t       ( ariane_axi::req_slv_t     ),
     .slv_resp_t      ( ariane_axi::resp_slv_t    ),
-    .mst_req_t       ( ariane_axi::req_slv_t     ),
-    .mst_resp_t      ( ariane_axi::resp_slv_t    ),
+    .mst_req_t       ( ariane_axi::req_llc_t     ),
+    .mst_resp_t      ( ariane_axi::resp_llc_t    ),
     .lite_aw_chan_t  ( aw_chan_lite_t            ),
     .lite_w_chan_t   ( w_chan_lite_t             ),
     .lite_b_chan_t   ( b_chan_lite_t             ),
@@ -600,7 +600,7 @@ module ariane_testharness #(
     .lite_r_chan_t   ( r_chan_lite_t             ),
     .lite_req_t      ( req_lite_t                ),
     .lite_resp_t     ( resp_lite_t               ),
-    .rule_full_t     ( axi_pkg::xbar_rule_64_t   )
+    .rule_full_t     ( axi_pkg::xbar_rule_64_t   ),
     .rule_lite_t     ( axi_pkg::xbar_rule_64_t   )
   ) i_llc (
     .clk_i       ( clk_i          ),
@@ -611,7 +611,7 @@ module ariane_testharness #(
     .mst_req_o   ( dram_req       ),
     .mst_resp_i  ( dram_resp      ),
     .conf_req_i  ( '0             ),
-    .conf_resp_o (                )
+    .conf_resp_o (                ),
     .ram_start_addr_i ( ariane_soc::DRAMBase                            ),
     .ram_end_addr_i   ( ariane_soc::DRAMBase   + ariane_soc::DRAMLength ),
     .spm_start_addr_i ( ariane_soc::LlcSpmBase                          ),
@@ -638,16 +638,16 @@ module ariane_testharness #(
 //  ariane_axi::ar_chan_slv_t ar_chan_i;
 //  ariane_axi::r_chan_slv_t  r_chan_o;
 
-  ariane_axi::aw_chan_slv_t aw_chan_o;
+  ariane_axi::aw_chan_llc_t aw_chan_o;
   ariane_axi::w_chan_t      w_chan_o;
-  ariane_axi::b_chan_slv_t  b_chan_i;
-  ariane_axi::ar_chan_slv_t ar_chan_o;
-  ariane_axi::r_chan_slv_t  r_chan_i;
+  ariane_axi::b_chan_llc_t  b_chan_i;
+  ariane_axi::ar_chan_llc_t ar_chan_o;
+  ariane_axi::r_chan_llc_t  r_chan_i;
 
   AXI_BUS #(
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave +1 ),
     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
   ) dram_delayed();
 
@@ -788,7 +788,7 @@ module ariane_testharness #(
   // assign dram.b_user = '0;
 
   axi2mem #(
-    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave + 1 ),
     .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
     .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
