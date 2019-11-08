@@ -1068,7 +1068,7 @@ axi_riscv_atomics #(
   llc #(
     .SetAssociativity( 8                         ),
     .NoLines         ( 1024                      ),
-    .NoBlocks        ( 16                        ),
+    .NoBlocks        ( 8                         ),
     .AxiCfg          ( LlcAxiCfg                 ),
     .slv_aw_chan_t   ( ariane_axi::aw_chan_slv_t ),
     .mst_aw_chan_t   ( ariane_axi::aw_chan_llc_t ),
@@ -1189,7 +1189,7 @@ axi_riscv_atomics #(
   // The user data width.
     .USER_WIDTH ( AxiUserWidth         ),
   // The number of cuts. Must be >= 0.
-    .NUM_CUTS   ( 32'd18               )
+    .NUM_CUTS   ( 32'd0               )
   ) i_dram_delay (
     .clk_i ( clk          ),
     .rst_ni( ndmreset_n   ),
