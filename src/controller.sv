@@ -42,6 +42,7 @@ module controller import ariane_pkg::*; (
     input  logic            flush_csr_i,            // We got an instruction which altered the CSR, flush the pipeline
     input  logic            fence_i_i,              // fence.i in
     input  logic            fence_i,                // fence in
+    input  logic [19:0]     fence_t_i,              // fence.t in
     input  logic            sfence_vma_i,           // We got an instruction to flush the TLBs and pipeline
     input  logic            flush_commit_i          // Flush request from commit stage
 );
@@ -119,7 +120,7 @@ module controller import ariane_pkg::*; (
 
 // this is not needed in the case since we
 // have a write-through cache in this case
-`ifndef WT_DCACHE
+//`ifndef WT_DCACHE
         // wait for the acknowledge here
         if (flush_dcache_ack_i && fence_active_q) begin
             fence_active_d = 1'b0;
@@ -127,7 +128,7 @@ module controller import ariane_pkg::*; (
         end else if (fence_active_q) begin
             flush_dcache = 1'b1;
         end
-`endif
+//`endif
         // ---------------------------------
         // SFENCE.VMA
         // ---------------------------------
