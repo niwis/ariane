@@ -218,6 +218,8 @@ module ariane import ariane_pkg::*; #(
   logic                     dcache_flush_ack_cache_ctrl;
   logic                     set_debug_pc;
   logic                     flush_commit;
+  logic                     flush_dcache_lfsr_ctrl_cache;
+  logic                     flush_icache_lfsr_ctrl_cache;
 
   icache_areq_i_t           icache_areq_ex_cache;
   icache_areq_o_t           icache_areq_cache_ex;
@@ -586,6 +588,8 @@ module ariane import ariane_pkg::*; #(
     .flush_tlb_o            ( flush_tlb_ctrl_ex             ),
     .flush_dcache_o         ( dcache_flush_ctrl_cache       ),
     .flush_dcache_ack_i     ( dcache_flush_ack_cache_ctrl   ),
+    .flush_dcache_lfsr_o    ( flush_dcache_lfsr_ctrl_cache  ),
+    .flush_icache_lfsr_o    ( flush_icache_lfsr_ctrl_cache  ),
 
     .halt_csr_i             ( halt_csr_ctrl                 ),
     .halt_o                 ( halt_ctrl                     ),
@@ -628,6 +632,8 @@ module ariane import ariane_pkg::*; #(
     .dcache_enable_i       ( dcache_en_csr_nbdcache      ),
     .dcache_flush_i        ( dcache_flush_ctrl_cache     ),
     .dcache_flush_ack_o    ( dcache_flush_ack_cache_ctrl ),
+    .flush_dcache_lfsr_i   ( flush_dcache_lfsr_ctrl_cache),
+    .flush_icache_lfsr_i   ( flush_icache_lfsr_ctrl_cache),
     // to commit stage
     .dcache_amo_req_i      ( amo_req                     ),
     .dcache_amo_resp_o     ( amo_resp                    ),

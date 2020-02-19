@@ -33,6 +33,7 @@ module cva6_icache import ariane_pkg::*; import wt_cache_pkg::*; #(
   input  logic                      rst_ni,
 
   input  logic                      flush_i,              // flush the icache, flush and kill have to be asserted together
+  input  logic                      flush_lfsr_i,
   input  logic                      en_i,                 // enable icache
   output logic                      miss_o,               // to performance counter
   // address translation requests
@@ -375,6 +376,7 @@ end else begin : gen_piton_offset
     .clk_i          ( clk_i       ),
     .rst_ni         ( rst_ni      ),
     .en_i           ( update_lfsr ),
+    .flush_i        ( flush_lfsr_i),
     .refill_way_oh  (             ),
     .refill_way_bin ( rnd_way     )
   );
