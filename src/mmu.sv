@@ -55,6 +55,7 @@ module mmu import ariane_pkg::*; #(
     input logic [ASID_WIDTH-1:0]            asid_to_be_flushed_i,
     input logic [riscv::VLEN-1:0]           vaddr_to_be_flushed_i,
     input logic                             flush_tlb_i,
+    input logic                             flush_tlb_plru_tree_i,
     // Performance counters
     output logic                            itlb_miss_o,
     output logic                            dtlb_miss_o,
@@ -102,6 +103,7 @@ module mmu import ariane_pkg::*; #(
         .clk_i            ( clk_i                      ),
         .rst_ni           ( rst_ni                     ),
         .flush_i          ( flush_tlb_i                ),
+        .flush_tlb_plru_tree_i,
 
         .update_i         ( update_ptw_itlb            ),
 
@@ -124,6 +126,7 @@ module mmu import ariane_pkg::*; #(
         .clk_i            ( clk_i                       ),
         .rst_ni           ( rst_ni                      ),
         .flush_i          ( flush_tlb_i                 ),
+        .flush_tlb_plru_tree_i,
 
         .update_i         ( update_ptw_dtlb             ),
 

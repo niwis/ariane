@@ -57,6 +57,7 @@ module load_store_unit import ariane_pkg::*; #(
     input  logic [ASID_WIDTH-1:0]    asid_to_be_flushed_i,
     input  logic [riscv::VLEN-1:0]   vaddr_to_be_flushed_i,
     input  logic                     flush_tlb_i,
+    input  logic                     flush_tlb_plru_tree_i,
     // Performance counters
     output logic                     itlb_miss_o,
     output logic                     dtlb_miss_o,

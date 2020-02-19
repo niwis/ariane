@@ -21,6 +21,7 @@ module ex_stage import ariane_pkg::*; #(
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
     input  logic                                   flush_i,
+    input  logic                                   flush_tlb_plru_tree_i,
     input  logic                                   debug_mode_i,
 
     input  logic [riscv::VLEN-1:0]                 rs1_forwarding_i,
@@ -278,6 +279,7 @@ module ex_stage import ariane_pkg::*; #(
         .clk_i,
         .rst_ni,
         .flush_i,
+        .flush_tlb_plru_tree_i,
         .no_st_pending_o,
         .fu_data_i             ( lsu_data ),
         .lsu_ready_o,

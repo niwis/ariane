@@ -22,6 +22,7 @@ module tlb import ariane_pkg::*; #(
     input  logic                    clk_i,    // Clock
     input  logic                    rst_ni,   // Asynchronous reset active low
     input  logic                    flush_i,  // Flush signal
+    input  logic                    flush_tlb_plru_tree_i,
     // Update TLB
     input  tlb_update_t             update_i,
     // Lookup signals
@@ -224,6 +225,10 @@ module tlb import ariane_pkg::*; #(
                 end
             end
             replace_en[i] = en;
+        end
+
+        if (flush_tlb_plru_tree_i) begin
+            plru_tree_n = '0;
         end
     end
 
