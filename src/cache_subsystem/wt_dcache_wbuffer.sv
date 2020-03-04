@@ -55,6 +55,9 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   input  logic                               clk_i,          // Clock
   input  logic                               rst_ni,         // Asynchronous reset active low
 
+  input  logic                               flush_i,        // flush internal buffers / states
+  input  logic                               flush_arb_i,
+  input  logic                               flush_fifo_i,
   input  logic                               cache_en_i,     // writes are treated as NC if disabled
   output logic                               empty_o,        // asserted if no data is present in write buffer
   output logic                               not_ni_o,    // asserted if no ni data is present in write buffer
@@ -204,7 +207,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   ) i_rtrn_id_fifo (
     .clk_i      ( clk_i            ),
     .rst_ni     ( rst_ni           ),
-    .flush_i    ( 1'b0             ),
+    .flush_i    ( flush_fifo_i     ),
     .testmode_i ( 1'b0             ),
     .full_o     (                  ),
     .empty_o    ( rtrn_empty       ),
@@ -254,7 +257,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   ) i_tx_id_rr (
     .clk_i  (clk_i       ),
     .rst_ni (rst_ni      ),
-    .flush_i('0          ),
+    .flush_i(flush_arb_i ),
     .rr_i   ('0          ),
     .req_i  (~tx_vld_o   ),
     .gnt_o  (            ),
@@ -354,7 +357,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   ) i_dirty_rr (
     .clk_i  ( clk_i             ),
     .rst_ni ( rst_ni            ),
-    .flush_i( '0                ),
+    .flush_i( flush_arb_i       ),
     .rr_i   ( '0                ),
     .req_i  ( dirty             ),
     .gnt_o  (                   ),
@@ -372,7 +375,7 @@ module wt_dcache_wbuffer import ariane_pkg::*; import wt_cache_pkg::*; #(
   ) i_clean_rr (
     .clk_i  ( clk_i             ),
     .rst_ni ( rst_ni            ),
-    .flush_i( '0                ),
+    .flush_i( flush_arb_i       ),
     .rr_i   ( '0                ),
     .req_i  ( tocheck           ),
     .gnt_o  (                   ),

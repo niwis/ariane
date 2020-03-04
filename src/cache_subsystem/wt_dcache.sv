@@ -28,6 +28,9 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
   input  logic                           flush_i,     // high until acknowledged
   output logic                           flush_ack_o, // send a single cycle acknowledge signal when the cache is flushed
   input  logic                           flush_lfsr_i,
+  input  logic                           flush_mem_arb_i,
+  input  logic                           flush_wbuffer_arb_i,
+  input  logic                           flush_fifo_i,
   output logic                           miss_o,      // we missed on a ld/st
   output logic                           wbuffer_empty_o,
   output logic                           wbuffer_not_ni_o,
@@ -216,6 +219,9 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
   ) i_wt_dcache_wbuffer (
     .clk_i           ( clk_i               ),
     .rst_ni          ( rst_ni              ),
+    .flush_i         ( flush_i             ),
+    .flush_arb_i     ( flush_wbuffer_arb_i ),
+    .flush_fifo_i    ( flush_fifo_i        ),
     .empty_o         ( wbuffer_empty_o     ),
     .not_ni_o        ( wbuffer_not_ni_o    ),
     // TODO: fix this
@@ -272,6 +278,8 @@ module wt_dcache import ariane_pkg::*; import wt_cache_pkg::*; #(
   ) i_wt_dcache_mem (
     .clk_i             ( clk_i              ),
     .rst_ni            ( rst_ni             ),
+    .flush_i           ( flush_i            ),
+    .flush_arb_i       ( flush_mem_arb_i    ),
     // read ports
     .rd_prio_i         ( rd_prio            ),
     .rd_tag_i          ( rd_tag             ),
