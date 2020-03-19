@@ -67,6 +67,11 @@ module ariane_testharness #(
   dm::dmi_req_t  debug_req;
   dm::dmi_resp_t debug_resp;
 
+  logic [31:0] pad_cycles_axi_pad_ariane;
+  logic [31:0] pad_cycles_ariane_axi_pad;
+  logic [31:0] pad_cycles_w_axi_pad_ariane;
+  logic [31:0] pad_cycles_w_ariane_axi_pad;
+
   assign test_en = 1'b0;
 
   AXI_BUS #(
@@ -336,6 +341,13 @@ module ariane_testharness #(
     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
   ) dram();
 
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+    .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+    .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+  ) dram_pad_r(), dram_pad_w();
+
   logic                         req;
   logic                         we;
   logic [AXI_ADDRESS_WIDTH-1:0] addr;
@@ -354,7 +366,39 @@ module ariane_testharness #(
     .clk_i,
     .rst_ni ( ndmreset_n               ),
     .slv    ( master[ariane_soc::DRAM] ),
-    .mst    ( dram                     )
+    .mst    ( dram_pad_r               )
+  );
+
+  axi_pad_intf #(
+    .ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+    .DATA_WIDTH ( AXI_DATA_WIDTH           ),
+    .USER_WIDTH ( AXI_USER_WIDTH           ),
+    .ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+    .PAD_CYCLES ( 32'd0                    ),
+    .PAD_DYNAMIC( 1'b1)
+  ) i_axi_pad_intf (
+    .clk_i      ( clk_i         ),
+    .rst_ni     ( ndmreset_n    ),
+    .slv        ( dram_pad_r    ), // from the node
+    .mst        ( dram_pad_w    ),  // to IO ports
+    .pad_cycles_i ( pad_cycles_ariane_axi_pad ),
+    .pad_cycles_o ( pad_cycles_axi_pad_ariane )
+  );
+  
+  axi_pad_w_intf #(
+    .ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+    .DATA_WIDTH ( AXI_DATA_WIDTH           ),
+    .USER_WIDTH ( AXI_USER_WIDTH           ),
+    .ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+    .PAD_CYCLES ( 32'd0            ),
+    .PAD_DYNAMIC( 1'b1             )
+  ) i_axi_pad_w_intf (
+    .clk_i      ( clk_i         ),
+    .rst_ni     ( ndmreset_n    ),
+    .slv        ( dram_pad_w    ), // from the node
+    .mst        ( dram     ),  // to IO ports
+    .pad_cycles_i ( pad_cycles_w_ariane_axi_pad ),
+    .pad_cycles_o ( pad_cycles_w_axi_pad_ariane )
   );
 
   AXI_BUS #(
@@ -678,7 +722,11 @@ module ariane_testharness #(
     .debug_req_i          ( debug_req_core      ),
 `endif
     .axi_req_o            ( axi_ariane_req      ),
-    .axi_resp_i           ( axi_ariane_resp     )
+    .axi_resp_i           ( axi_ariane_resp     ),
+    .pad_cycles_i         ( pad_cycles_axi_pad_ariane ),
+    .pad_cycles_o         ( pad_cycles_ariane_axi_pad ),
+    .pad_cycles_w_i       ( pad_cycles_w_axi_pad_ariane ),
+    .pad_cycles_w_o       ( pad_cycles_w_ariane_axi_pad )
   );
 
   axi_master_connect i_axi_master_connect_ariane (

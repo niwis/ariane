@@ -440,7 +440,10 @@ package riscv;
         CSR_HPM_COUNTER_28 = 12'hC1C,  // reserved
         CSR_HPM_COUNTER_29 = 12'hC1D,  // reserved
         CSR_HPM_COUNTER_30 = 12'hC1E,  // reserved
-        CSR_HPM_COUNTER_31 = 12'hC1F  // reserved
+        CSR_HPM_COUNTER_31 = 12'hC1F,  // reserved
+
+        CSR_PAD_CYCLES     = 12'h7C0,  // For axi_pad module
+        CSR_PAD_CYCLES_W   = 12'h7C1   // For axi_pad module
     } csr_reg_t;
 
     localparam logic [63:0] SSTATUS_UIE  = 64'h00000001;

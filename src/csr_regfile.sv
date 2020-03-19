@@ -82,7 +82,12 @@ module csr_regfile #(
     output logic  [4:0]           perf_addr_o,                // read/write address to performance counter module (up to 29 aux counters possible in riscv encoding.h)
     output logic  [63:0]          perf_data_o,                // write data to performance counter module
     input  logic  [63:0]          perf_data_i,                // read data from performance counter module
-    output logic                  perf_we_o
+    output logic                  perf_we_o,
+
+    input  logic  [31:0]          pad_cycles_i,
+    output logic  [31:0]          pad_cycles_o,
+    input  logic  [31:0]          pad_cycles_w_i,
+    output logic  [31:0]          pad_cycles_w_o
 );
     // internal signal to keep track of access exceptions
     logic        read_access_exception, update_access_exception, privilege_violation;
@@ -261,6 +266,8 @@ module csr_regfile #(
                 // custom (non RISC-V) cache control
                 riscv::CSR_DCACHE:             csr_rdata = dcache_q;
                 riscv::CSR_ICACHE:             csr_rdata = icache_q;
+                riscv::CSR_PAD_CYCLES:         csr_rdata = {32'h0, pad_cycles_i};
+                riscv::CSR_PAD_CYCLES_W:       csr_rdata = {32'h0, pad_cycles_w_i};
                 default: read_access_exception = 1'b1;
             endcase
         end
@@ -344,6 +351,9 @@ module csr_regfile #(
 
         en_ld_st_translation_d  = en_ld_st_translation_q;
         dirty_fp_state_csr      = 1'b0;
+
+        pad_cycles_o            = 32'hffffffff;
+        pad_cycles_w_o          = 32'hffffffff;
 
         // check for correct access rights and that we are writing
         if (csr_we) begin
@@ -546,6 +556,8 @@ module csr_regfile #(
 
                 riscv::CSR_DCACHE:             dcache_d    = csr_wdata[0]; // enable bit
                 riscv::CSR_ICACHE:             icache_d    = csr_wdata[0]; // enable bit
+                riscv::CSR_PAD_CYCLES:         pad_cycles_o   = csr_wdata[31:0];
+                riscv::CSR_PAD_CYCLES_W:       pad_cycles_w_o = csr_wdata[31:0];
                 default: update_access_exception = 1'b1;
             endcase
         end

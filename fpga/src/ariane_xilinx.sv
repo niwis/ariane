@@ -421,6 +421,11 @@ axi_adapter #(
 ariane_axi::req_t    axi_ariane_req;
 ariane_axi::resp_t   axi_ariane_resp;
 
+logic [31:0] pad_cycles_axi_pad_ariane;
+logic [31:0] pad_cycles_ariane_axi_pad;
+logic [31:0] pad_cycles_w_axi_pad_ariane;
+logic [31:0] pad_cycles_w_ariane_axi_pad;
+
 ariane #(
     .ArianeCfg ( ariane_soc::ArianeSocCfg )
 ) i_ariane (
@@ -433,7 +438,11 @@ ariane #(
     .time_irq_i   ( timer_irq           ),
     .debug_req_i  ( debug_req_irq       ),
     .axi_req_o    ( axi_ariane_req      ),
-    .axi_resp_i   ( axi_ariane_resp     )
+    .axi_resp_i   ( axi_ariane_resp     ),
+    .pad_cycles_i ( pad_cycles_axi_pad_ariane ),
+    .pad_cycles_o ( pad_cycles_ariane_axi_pad ),
+    .pad_cycles_w_i ( pad_cycles_w_axi_pad_ariane ),
+    .pad_cycles_w_o ( pad_cycles_w_ariane_axi_pad )
 );
 
 axi_master_connect i_axi_master_connect_ariane (.axi_req_i(axi_ariane_req), .axi_resp_o(axi_ariane_resp), .master(slave[0]));
@@ -618,6 +627,13 @@ AXI_BUS #(
     .AXI_USER_WIDTH ( AxiUserWidth     )
 ) dram();
 
+AXI_BUS #(
+   .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
+   .AXI_DATA_WIDTH ( AxiDataWidth     ),
+   .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
+   .AXI_USER_WIDTH ( AxiUserWidth     )
+) dram_pad_r(), dram_pad_w();
+
 axi_riscv_atomics_wrap #(
     .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
     .AXI_DATA_WIDTH ( AxiDataWidth     ),
@@ -629,7 +645,39 @@ axi_riscv_atomics_wrap #(
     .clk_i  ( clk                      ),
     .rst_ni ( ndmreset_n               ),
     .slv    ( master[ariane_soc::DRAM] ),
-    .mst    ( dram                     )
+    .mst    ( dram_pad_r               )
+);
+
+axi_pad_intf #(
+   .ADDR_WIDTH ( AxiAddrWidth     ),
+   .DATA_WIDTH ( AxiDataWidth     ),
+   .USER_WIDTH ( AxiUserWidth     ),
+   .ID_WIDTH   ( AxiIdWidthSlaves ),
+   .PAD_CYCLES ( 32'd0            ),
+   .PAD_DYNAMIC( 1'b1             )
+) i_axi_pad_intf (
+   .clk_i      ( clk           ),
+   .rst_ni     ( ndmreset_n    ),
+   .slv        ( dram_pad_r    ), // from the node
+   .mst        ( dram_pad_w    ),  // to IO ports
+   .pad_cycles_i ( pad_cycles_ariane_axi_pad ),
+   .pad_cycles_o ( pad_cycles_axi_pad_ariane )
+);
+
+axi_pad_w_intf #(
+   .ADDR_WIDTH ( AxiAddrWidth     ),
+   .DATA_WIDTH ( AxiDataWidth     ),
+   .USER_WIDTH ( AxiUserWidth     ),
+   .ID_WIDTH   ( AxiIdWidthSlaves ),
+   .PAD_CYCLES ( 32'd0            ),
+   .PAD_DYNAMIC( 1'b1             )
+) i_axi_pad_w_intf (
+   .clk_i      ( clk           ),
+   .rst_ni     ( ndmreset_n    ),
+   .slv        ( dram_pad_w    ), // from the node
+   .mst        ( dram     ),  // to IO ports
+   .pad_cycles_i ( pad_cycles_w_ariane_axi_pad ),
+   .pad_cycles_o ( pad_cycles_w_axi_pad_ariane )
 );
 
 `ifdef PROTOCOL_CHECKER

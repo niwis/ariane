@@ -29,6 +29,12 @@ module ariane #(
   // Timer facilities
   input  logic                         time_irq_i,   // timer interrupt in (async)
   input  logic                         debug_req_i,  // debug request (async)
+
+  input  logic  [31:0]                 pad_cycles_i,
+  output logic  [31:0]                 pad_cycles_o,
+
+  input  logic  [31:0]                 pad_cycles_w_i,
+  output logic  [31:0]                 pad_cycles_w_o,
 `ifdef PITON_ARIANE
   // L15 (memory side)
   output wt_cache_pkg::l15_req_t       l15_req_o,

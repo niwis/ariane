@@ -166,6 +166,8 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/axi/src/axi_join.sv                                                \
         src/axi/src/axi_delayer.sv                                             \
         src/axi/src/axi_to_axi_lite.sv                                         \
+        src/axi/src/axi_pad.sv                                                 \
+        src/axi/src/axi_pad_w.sv                                                 \
         src/fpga-support/rtl/SyncSpRamBeNx64.sv                                \
         src/common_cells/src/unread.sv                                         \
         src/common_cells/src/sync.sv                                           \
