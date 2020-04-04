@@ -889,6 +889,9 @@ module ariane_testharness #(
     '{mst_port_idx: ariane_soc::SPI,
       start_addr:   ariane_soc::SPIBase,
       end_addr:     ariane_soc::SPIBase      + ariane_soc::SPILength     },
+    '{mst_port_idx: ariane_soc::Timer,
+      start_addr:   ariane_soc::TimerBase,
+      end_addr:     ariane_soc::TimerBase    + ariane_soc::TimerLength   },
     '{mst_port_idx: ariane_soc::UART,
       start_addr:   ariane_soc::UARTBase,
       end_addr:     ariane_soc::UARTBase     + ariane_soc::UARTLength    },
@@ -1059,6 +1062,17 @@ module ariane_testharness #(
     .axi_resp_o ( mst_ports_resp[ariane_soc::Ethernet] ),
     .slave      ( ethernet_bus                     )
   );
+  AXI_BUS #(
+      .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+      .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+      .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+      .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+  ) timer_bus();
+  axi_slave_connect_rev i_timer_connect_rev (
+    .axi_req_i  ( mst_ports_req [ariane_soc::Timer] ),
+    .axi_resp_o ( mst_ports_resp[ariane_soc::Timer] ),
+    .slave      ( ethernet_bus                     )
+  );
 
   ariane_peripherals #(
     .AxiAddrWidth ( AXI_ADDRESS_WIDTH        ),
@@ -1083,6 +1097,7 @@ module ariane_testharness #(
     .uart      ( uart_bus                     ),
     .spi       ( spi_bus                      ),
     .ethernet  ( ethernet_bus                 ),
+    .timer     ( timer_bus                    ),
     .irq_o     ( irqs                         ),
     .rx_i      ( rx                           ),
     .tx_o      ( tx                           ),

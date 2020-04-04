@@ -290,6 +290,9 @@ localparam axi_pkg::xbar_rule_64_t [ariane_soc::NB_PERIPHERALS + 1] AddrMap = '{
   '{mst_port_idx: ariane_soc::SPI,
     start_addr:   ariane_soc::SPIBase,
     end_addr:     ariane_soc::SPIBase      + ariane_soc::SPILength     },
+  '{mst_port_idx: ariane_soc::Timer,
+    start_addr:   ariane_soc::TimerBase,
+    end_addr:     ariane_soc::TimerBase    + ariane_soc::TimerLength   },
   '{mst_port_idx: ariane_soc::UART,
     start_addr:   ariane_soc::UARTBase,
     end_addr:     ariane_soc::UARTBase     + ariane_soc::UARTLength    },
@@ -677,6 +680,17 @@ axi_slave_connect_rev i_ethernet_connect_rev (
   .axi_resp_o ( mst_ports_resp[ariane_soc::Ethernet] ),
   .slave      ( ethernet_bus                         )
 );
+AXI_BUS #(
+    .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
+    .AXI_DATA_WIDTH ( AxiDataWidth     ),
+    .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
+    .AXI_USER_WIDTH ( AxiUserWidth     )
+) timer_bus();
+axi_slave_connect_rev i_timer_connect_rev (
+  .axi_req_i  ( mst_ports_req [ariane_soc::Timer] ),
+  .axi_resp_o ( mst_ports_resp[ariane_soc::Timer] ),
+  .slave      ( timer_bus                         )
+);
 
 ariane_peripherals #(
     .AxiAddrWidth ( AxiAddrWidth     ),
@@ -708,6 +722,7 @@ ariane_peripherals #(
     .gpio         ( gpio_bus      ),
     .eth_clk_i    ( eth_clk       ),
     .ethernet     ( ethernet_bus  ),
+    .timer        ( timer_bus     ),
     .irq_o        ( irq           ),
     .rx_i         ( rx            ),
     .tx_o         ( tx            ),
