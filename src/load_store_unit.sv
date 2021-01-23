@@ -16,8 +16,24 @@ import ariane_pkg::*;
 
 module load_store_unit #(
     parameter int unsigned ASID_WIDTH = 1,
-    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+    parameter ariane_pkg::ariane_cfg_t ArianeCfg = '0//ariane_pkg::ArianeDefaultConfig
 )(
+    /*AUTOSVA
+    lsu_lookup: lsu_req -IN> lsu_res
+    lsu_req_val = lsu_valid_i && fu_data_i.fu == LOAD
+    lsu_req_rdy = lsu_ready_o
+    [TRANS_ID_BITS-1:0] lsu_req_transid = fu_data_i.trans_id
+    [TRANS_ID_BITS+4-1:0] lsu_req_stable = {fu_data_i.trans_id,fu_data_i.fu}
+    lsu_res_val = load_valid_o
+    [TRANS_ID_BITS-1:0] lsu_res_transid = load_trans_id_o
+
+    commit: store_res -OUT> commit
+    store_res_val = store_valid_o
+    [TRANS_ID_BITS-1:0] store_res_transid = store_trans_id_o
+    commit_val = commit_i
+    commit_rdy = commit_ready_o
+    [TRANS_ID_BITS-1:0] commit_transid = commit_tran_id_i
+    */
     input  logic                     clk_i,
     input  logic                     rst_ni,
     input  logic                     flush_i,

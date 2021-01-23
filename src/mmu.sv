@@ -22,11 +22,25 @@ module mmu #(
       parameter int unsigned ASID_WIDTH            = 1,
       parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (
+        /*AUTOSVA
+        itlb_lookup: itlb_req -IN> itlb_res
+        itlb_req_val = icache_areq_i.fetch_req
+        itlb_req_rdy = icache_areq_o.fetch_valid
+        [riscv::VLEN+ASID_WIDTH-1:0] itlb_req_stable = {asid_i,icache_areq_i.fetch_vaddr}
+        itlb_res_val = icache_areq_o.fetch_valid
+
+        dtlb_lookup: dtlb_req -IN> dtlb_res
+        dtlb_req_val = lsu_req_i
+        [riscv::VLEN+ASID_WIDTH-1:0] dtlb_req_stable = {asid_i, lsu_vaddr_i};
+        dtlb_res_val = lsu_valid_o
+        */
+        
         input  logic                            clk_i,
         input  logic                            rst_ni,
         input  logic                            flush_i,
         input  logic                            enable_translation_i,
         input  logic                            en_ld_st_translation_i,   // enable virtual memory translation for load/stores
+        
         // IF interface
         input  icache_areq_o_t                  icache_areq_i,
         output icache_areq_i_t                  icache_areq_o,

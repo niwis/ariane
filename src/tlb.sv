@@ -20,10 +20,25 @@ module tlb #(
       parameter int unsigned TLB_ENTRIES = 4,
       parameter int unsigned ASID_WIDTH  = 1
   )(
+    /*AUTOSVA
+    lookup: lk_req -IN> lk_res
+    lk_req_val = lu_access_i
+    lk_req_rdy = lu_access_i && lu_hit_o
+    [riscv::VLEN+ASID_WIDTH-1:0] lk_req_stable = {lu_vaddr_i, lu_asid_i}
+    lk_res_val = lu_access_i && lu_hit_o
+    */
+    /*
+    update: miss -OUT> alloc
+    miss_val = lu_access_i && !lu_hit_o
+    [27:0] miss_data = {lu_asid_i,lu_vaddr_i[38:12]}
+    alloc_val = update_i.valid
+    [27:0] alloc_data = {update_i.asid,update_i.vpn}
+    */
     input  logic                    clk_i,    // Clock
     input  logic                    rst_ni,   // Asynchronous reset active low
     input  logic                    flush_i,  // Flush signal
     input  logic                    flush_tlb_plru_tree_i,
+
     // Update TLB
     input  tlb_update_t             update_i,
     // Lookup signals

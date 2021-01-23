@@ -15,9 +15,25 @@
 import ariane_pkg::*;
 
 module store_unit (
+    /*AUTOSVA
+    su_lookup: su_req -IN> su_res
+    su_req_val = valid_i
+    su_req_rdy = pop_st_o
+    [TRANS_ID_BITS-1:0] su_req_transid = lsu_ctrl_i.trans_id
+    su_res_val = valid_o
+    [TRANS_ID_BITS-1:0] su_res_transid = trans_id_o
+
+    su_dc: dc_req --OUT> dc_res
+    dc_req_val = req_port_o.data_req
+    dc_req_rdy = req_port_i.data_gnt
+    dc_req_transid = '0
+    dc_res_val = req_port_i.data_rvalid
+    dc_res_transid = '0
+    */
     input  logic                     clk_i,    // Clock
     input  logic                     rst_ni,  // Asynchronous reset active low
     input  logic                     flush_i,
+    
     output logic                     no_st_pending_o,
     output logic                     store_buffer_empty_o,
     // store unit input port
