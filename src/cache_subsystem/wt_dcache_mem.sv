@@ -261,7 +261,7 @@ module wt_dcache_mem #(
       .NUM_WORDS  ( wt_cache_pkg::DCACHE_NUM_WORDS    )
     ) i_data_sram (
       .clk_i      ( clk_i               ),
-      .rst_ni     ( rst_ni              ),
+      //.rst_ni     ( rst_ni              ),
       .req_i      ( bank_req   [k]      ),
       .we_i       ( bank_we    [k]      ),
       .addr_i     ( bank_idx   [k]      ),
@@ -283,7 +283,7 @@ module wt_dcache_mem #(
       .NUM_WORDS  ( wt_cache_pkg::DCACHE_NUM_WORDS   )
     ) i_tag_sram (
       .clk_i     ( clk_i               ),
-      .rst_ni    ( rst_ni              ),
+      //.rst_ni    ( rst_ni              ),
       .req_i     ( vld_req[i]          ),
       .we_i      ( vld_we              ),
       .addr_i    ( vld_addr            ),

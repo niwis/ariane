@@ -447,7 +447,7 @@ end else begin : gen_piton_offset
       .NUM_WORDS  ( ICACHE_NUM_WORDS   )
     ) tag_sram (
       .clk_i     ( clk_i                    ),
-      .rst_ni    ( rst_ni                   ),
+      //.rst_ni    ( rst_ni                   ),
       .req_i     ( vld_req[i]               ),
       .we_i      ( vld_we                   ),
       .addr_i    ( vld_addr                 ),
@@ -467,7 +467,7 @@ end else begin : gen_piton_offset
       .NUM_WORDS  ( ICACHE_NUM_WORDS  )
     ) data_sram (
       .clk_i     ( clk_i               ),
-      .rst_ni    ( rst_ni              ),
+      //.rst_ni    ( rst_ni              ),
       .req_i     ( cl_req[i]           ),
       .we_i      ( cl_we               ),
       .addr_i    ( cl_index            ),
