@@ -22,6 +22,7 @@ module wt_axi_adapter #(
 ) (
   input logic                  clk_i,
   input logic                  rst_ni,
+  input  logic                 flush_i,
 
   // icache
   input  logic                 icache_data_req_i,
@@ -106,7 +107,7 @@ module wt_axi_adapter #(
   ) i_rr_arb_tree (
     .clk_i  (clk_i   ),
     .rst_ni (rst_ni  ),
-    .flush_i('0      ),
+    .flush_i(flush_i ),
     .rr_i   ('0      ),
     .req_i  (arb_req ),
     .gnt_o  (arb_ack ),
@@ -237,7 +238,7 @@ module wt_axi_adapter #(
   ) i_icache_data_fifo (
     .clk_i       (  clk_i                   ),
     .rst_ni      (  rst_ni                  ),
-    .flush_i     (  1'b0                    ),
+    .flush_i     (  flush_i                 ),
     .testmode_i  (  1'b0                    ),
     .full_o      (  icache_data_full        ),
     .empty_o     (  icache_data_empty       ),
@@ -254,7 +255,7 @@ module wt_axi_adapter #(
   ) i_dcache_data_fifo (
     .clk_i       (  clk_i                   ),
     .rst_ni      (  rst_ni                  ),
-    .flush_i     (  1'b0                    ),
+    .flush_i     (  flush_i                 ),
     .testmode_i  (  1'b0                    ),
     .full_o      (  dcache_data_full        ),
     .empty_o     (  dcache_data_empty       ),
@@ -278,7 +279,7 @@ module wt_axi_adapter #(
   ) i_rd_icache_id (
     .clk_i      ( clk_i                   ),
     .rst_ni     ( rst_ni                  ),
-    .flush_i    ( 1'b0                    ),
+    .flush_i    ( flush_i                 ),
     .testmode_i ( 1'b0                    ),
     .full_o     ( icache_rd_full          ),
     .empty_o    ( icache_rd_empty         ),
@@ -295,7 +296,7 @@ module wt_axi_adapter #(
   ) i_rd_dcache_id (
     .clk_i      ( clk_i                   ),
     .rst_ni     ( rst_ni                  ),
-    .flush_i    ( 1'b0                    ),
+    .flush_i    ( flush_i                 ),
     .testmode_i ( 1'b0                    ),
     .full_o     ( dcache_rd_full          ),
     .empty_o    ( dcache_rd_empty         ),
@@ -312,7 +313,7 @@ module wt_axi_adapter #(
   ) i_wr_dcache_id (
     .clk_i      ( clk_i                   ),
     .rst_ni     ( rst_ni                  ),
-    .flush_i    ( 1'b0                    ),
+    .flush_i    ( flush_i                 ),
     .testmode_i ( 1'b0                    ),
     .full_o     ( dcache_wr_full          ),
     .empty_o    ( dcache_wr_empty         ),
@@ -342,7 +343,7 @@ module wt_axi_adapter #(
   ) i_b_fifo (
     .clk_i      ( clk_i      ),
     .rst_ni     ( rst_ni     ),
-    .flush_i    ( 1'b0       ),
+    .flush_i    ( flush_i    ),
     .testmode_i ( 1'b0       ),
     .full_o     ( b_full     ),
     .empty_o    ( b_empty    ),

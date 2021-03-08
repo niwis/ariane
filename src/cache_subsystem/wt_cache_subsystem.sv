@@ -160,6 +160,7 @@ module wt_cache_subsystem #(
   wt_axi_adapter i_adapter (
     .clk_i              ( clk_i                   ),
     .rst_ni             ( rst_ni                  ),
+    .flush_i            ( dcache_flush_i          ),
     .icache_data_req_i  ( icache_adapter_data_req ),
     .icache_data_ack_o  ( adapter_icache_data_ack ),
     .icache_data_i      ( icache_adapter          ),
