@@ -91,6 +91,9 @@ ariane_pkg := include/riscv_pkg.sv                          \
               tb/ariane_soc_pkg.sv                          \
               tb/ariane_axi_soc_pkg.sv                      \
               include/ariane_axi_pkg.sv                     \
+              src/common_cells/src/cf_math_pkg.sv           \
+              src/common_cells/src/cb_filter_pkg.sv         \
+              src/llc/include/llc_pkg.sv                    \
               src/fpu/src/fpnew_pkg.sv                      \
               src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
 ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
@@ -237,8 +240,6 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/common_cells/src/sub_per_hash.sv                                   \
         src/common_cells/src/cb_filter.sv                                      \
         src/common_cells/src/onehot_to_bin.sv                                  \
-        src/llc/include/llc_pkg.sv                                             \
-        src/common_cells/src/cf_math_pkg.sv                                    \
         src/llc/src/desc_fifo.sv                                               \
         src/llc/src/eviction_refill/ax_master.sv                               \
         src/llc/src/eviction_refill/r_master.sv                                \

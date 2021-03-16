@@ -651,23 +651,13 @@ module ariane_testharness #(
     .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
   ) dram_delayed();
 
-  ariane_axi_soc::aw_chan_slv_t aw_chan_i;
-  ariane_axi_soc::w_chan_t      w_chan_i;
-  ariane_axi_soc::b_chan_slv_t  b_chan_o;
-  ariane_axi_soc::ar_chan_slv_t ar_chan_i;
-  ariane_axi_soc::r_chan_slv_t  r_chan_o;
-  ariane_axi_soc::aw_chan_slv_t aw_chan_o;
-  ariane_axi_soc::w_chan_t      w_chan_o;
-  ariane_axi_soc::b_chan_slv_t  b_chan_i;
-  ariane_axi_soc::ar_chan_slv_t ar_chan_o;
-  ariane_axi_soc::r_chan_slv_t  r_chan_i;
 
   axi_delayer #(
-    .aw_t              ( ariane_axi_soc::aw_chan_slv_t ),
-    .w_t               ( ariane_axi_soc::w_chan_t      ),
-    .b_t               ( ariane_axi_soc::b_chan_slv_t  ),
-    .ar_t              ( ariane_axi_soc::ar_chan_slv_t ),
-    .r_t               ( ariane_axi_soc::r_chan_slv_t  ),
+    .aw_t              ( ariane_axi::aw_chan_llc_t ),
+    .w_t               ( ariane_axi::w_chan_t      ),
+    .b_t               ( ariane_axi::b_chan_llc_t  ),
+    .ar_t              ( ariane_axi::ar_chan_llc_t ),
+    .r_t               ( ariane_axi::r_chan_llc_t  ),
     .StallRandomOutput ( StallRandomOutput         ),
     .StallRandomInput  ( StallRandomInput          ),
     .FixedDelayInput   ( 0                         ),
@@ -1071,7 +1061,7 @@ module ariane_testharness #(
   axi_slave_connect_rev i_timer_connect_rev (
     .axi_req_i  ( mst_ports_req [ariane_soc::Timer] ),
     .axi_resp_o ( mst_ports_resp[ariane_soc::Timer] ),
-    .slave      ( ethernet_bus                     )
+    .slave      ( timer_bus                         )
   );
 
   ariane_peripherals #(

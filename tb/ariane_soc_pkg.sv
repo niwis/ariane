@@ -29,11 +29,12 @@ package ariane_soc;
     GPIO     = 2,
     Ethernet = 3,
     SPI      = 4,
-    UART     = 5,
-    PLIC     = 6,
-    CLINT    = 7,
-    ROM      = 8,
-    Debug    = 9
+    Timer    = 5,
+    UART     = 6,
+    PLIC     = 7,
+    CLINT    = 8,
+    ROM      = 9,
+    Debug    = 10
   } axi_slaves_t;
 
   localparam NB_PERIPHERALS = Debug + 1;

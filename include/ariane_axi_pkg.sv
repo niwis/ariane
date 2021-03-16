@@ -63,6 +63,7 @@ package ariane_axi;
         axi_pkg::qos_t    qos;
         axi_pkg::region_t region;
         axi_pkg::atop_t   atop;
+        user_t            user;
     } aw_chan_slv_t;
 
     // AW Channel - Llc
@@ -78,6 +79,7 @@ package ariane_axi;
         axi_pkg::qos_t    qos;
         axi_pkg::region_t region;
         axi_pkg::atop_t   atop;
+        user_t            user;
     } aw_chan_llc_t;
 
     // W Channel - AXI4 doesn't define a wid
@@ -99,12 +101,14 @@ package ariane_axi;
     typedef struct packed {
         id_slv_t        id;
         axi_pkg::resp_t resp;
+        user_t          user;
     } b_chan_slv_t;
 
     // B Channel - Llc
     typedef struct packed {
         id_llc_t        id;
         axi_pkg::resp_t resp;
+        user_t          user;
     } b_chan_llc_t;
 
     // AR Channel
@@ -134,6 +138,7 @@ package ariane_axi;
         axi_pkg::prot_t   prot;
         axi_pkg::qos_t    qos;
         axi_pkg::region_t region;
+        user_t            user;
     } ar_chan_slv_t;
 
     // AR Channel - Llc
@@ -148,6 +153,7 @@ package ariane_axi;
         axi_pkg::prot_t   prot;
         axi_pkg::qos_t    qos;
         axi_pkg::region_t region;
+        user_t            user;
     } ar_chan_llc_t;
 
     // R Channel
@@ -165,6 +171,7 @@ package ariane_axi;
         data_t          data;
         axi_pkg::resp_t resp;
         logic           last;
+        user_t          user;
     } r_chan_slv_t;
 
     // R Channel - Llc
@@ -173,6 +180,7 @@ package ariane_axi;
         data_t          data;
         axi_pkg::resp_t resp;
         logic           last;
+        user_t          user;
     } r_chan_llc_t;
 
     // Request/Response structs
