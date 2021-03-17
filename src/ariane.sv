@@ -38,6 +38,23 @@ module ariane #(
   output ariane_axi::req_t             axi_req_o,
   input  ariane_axi::resp_t            axi_resp_i
 `endif
+    /*AUTOSVA
+    axi_read: axi_ar --OUT> axi_r
+    axi_ar_val = axi_req_o.ar_valid
+    axi_ar_rdy = axi_resp_i.ar_ready
+    [ariane_soc::IdWidth-1:0] axi_ar_transid = axi_req_o.ar.id
+    axi_r_val = axi_resp_i.r_valid
+    axi_r_rdy = axi_req_o.r_ready
+    [ariane_soc::IdWidth-1:0] axi_r_transid = axi_resp_i.r.id
+
+    axi_write: axi_aw --OUT> axi_b
+    axi_aw_val = axi_req_o.aw_valid
+    axi_aw_rdy = axi_resp_i.aw_ready
+    [ariane_soc::IdWidth-1:0] axi_aw_transid = axi_req_o.aw.id
+    axi_b_val = axi_resp_i.b_valid
+    axi_b_rdy = axi_req_o.b_ready
+    [ariane_soc::IdWidth-1:0] axi_b_transid = axi_resp_i.b.id
+    */
 );
 
   // ------------------------------------------
