@@ -35,6 +35,8 @@ module controller import ariane_pkg::*; (
 
     input  logic            halt_csr_i,             // Halt request from CSR (WFI instruction)
     output logic            halt_o,                 // Halt signal to commit stage
+    input  logic [31:0]     fence_t_pad_i,          // Pad cycles of fence.t end relative to time interrupt
+    input  logic            time_irq_i,             // Time interrupt
     input  logic            eret_i,                 // Return from exception
     input  logic            ex_valid_i,             // We got an exception, flush the pipeline
     input  logic            set_debug_pc_i,         // set the debug pc from CSR
@@ -50,6 +52,14 @@ module controller import ariane_pkg::*; (
     // active fence - high if we are currently flushing the dcache
     logic fence_active_d, fence_active_q;
     logic flush_dcache;
+
+    // Pad counter
+    logic [31:0] pad_cnt;
+    logic time_irq_q;
+
+    // fence.t FSM
+    typedef enum logic[1:0] {IDLE, FLUSH_DCACHE, WAIT} fence_t_state_e;
+    fence_t_state_e fence_t_state_d, fence_t_state_q;
 
     // ------------
     // Flush CTRL
@@ -193,20 +203,71 @@ module controller import ariane_pkg::*; (
     // ----------------------
     always_comb begin
         // halt the core if the fence is active
-        halt_o = halt_csr_i || fence_active_q;
+        halt_o = halt_csr_i || fence_active_q || (fence_t_state_q != IDLE);
     end
+
+    // ----------------------
+    // Fence.t Logic
+    // ----------------------
+    always_comb begin : fence_t_fsm
+        // Default assignments
+        fence_t_state_d = fence_t_state_q;
+
+        unique case (fence_t_state_q)
+            // Idle
+            IDLE: begin
+                if (|fence_t_i) fence_t_state_d = FLUSH_DCACHE;
+            end
+
+            // Wait for dcache to acknowledge flush
+            FLUSH_DCACHE: begin
+                if (flush_dcache_ack_i) begin
+                    fence_t_state_d = WAIT;
+                end
+            end
+
+            // Wait for the padding to complete.
+            WAIT: begin
+                if (pad_cnt == '0) fence_t_state_d = IDLE;
+            end
+
+            // We should never reach this state
+            default: begin
+                fence_t_state_d = IDLE;
+            end
+        endcase
+    end
+
+    counter #(
+        .WIDTH           ( 32 ),
+        .STICKY_OVERFLOW ( 0  )
+    ) i_pad_cnt (
+        .clk_i,
+        .rst_ni,
+        .clear_i    ( 1'b0                     ),
+        .en_i       ( |pad_cnt                 ),  // Count until 0
+        .load_i     ( time_irq_i & ~time_irq_q ),  // Start counting on positive edge of time irq
+        .down_i     ( 1'b1                     ),  // Always count down
+        .d_i        ( fence_t_pad_i            ),  // Start counting from FENCE_T_CSR value
+        .q_o        ( pad_cnt                  ),
+        .overflow_o (                          )
+    );
 
     // ----------------------
     // Registers
     // ----------------------
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            fence_active_q <= 1'b0;
-            flush_dcache_o <= 1'b0;
+            fence_t_state_q <= IDLE;
+            fence_active_q  <= 1'b0;
+            flush_dcache_o  <= 1'b0;
+            time_irq_q      <= 1'b0;
         end else begin
+            fence_t_state_q <= fence_t_state_d;
             fence_active_q <= fence_active_d;
             // register on the flush signal, this signal might be critical
-            flush_dcache_o <= flush_dcache;
+            flush_dcache_o  <= flush_dcache;
+            time_irq_q      <= time_irq_i;
         end
     end
 endmodule
