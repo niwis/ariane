@@ -19,6 +19,7 @@ module ariane_wrap #(
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
+  input  logic                         rst_nin,
   // Core ID, Cluster ID and boot address are considered more or less static
   input  logic [63:0]                  boot_addr_i,  // reset boot address
   input  logic [63:0]                  hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
@@ -44,13 +45,16 @@ module ariane_wrap #(
 //generate for (i = 0)
   ariane #(
     .ArianeCfg ( ArianeCfg )
-  ) ariane1 (.*);
+  ) ariane1 (
+    .rst_ni (rst_nin),
+    .*);
 
   ariane #(
     .ArianeCfg ( ArianeCfg )
   ) ariane2 (
     //.l15_req_o   ( l15_req_o2   ),
     //.l15_rtrn_i  ( l15_rtrn_i2  ),
+    .rst_ni (rst_nin),
     .axi_req_o (axi_req_o2),
     .axi_resp_i (axi_resp_i2),
     .*
