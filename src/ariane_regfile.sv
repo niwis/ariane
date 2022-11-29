@@ -48,7 +48,7 @@ module ariane_regfile_lol #(
 
     logic [NUM_WORDS-1:ZERO_REG_ZERO]          mem_clocks;
 
-    logic [DATA_WIDTH-1:0]                     mem[NUM_WORDS];
+    logic [NUM_WORDS][DATA_WIDTH-1:0]                     mem;
     logic [NR_WRITE_PORTS-1:0][NUM_WORDS-1:1]  waddr_onehot,waddr_onehot_q;
     logic [NR_WRITE_PORTS-1:0][DATA_WIDTH-1:0] wdata_q;
 

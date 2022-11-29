@@ -220,7 +220,8 @@ module ariane #(
   logic                     flush_commit;
   logic                     flush_dcache_lfsr_ctrl_cache;
   logic                     flush_icache_lfsr_ctrl_cache;
-  logic                     flush_tlb_plru_tree_ctrl_ex;
+  // NOTE logic                     flush_tlb_plru_tree_ctrl_ex;
+  logic                     flush_tlb_plru_tree_ctrl_ex = 0;
   logic                     flush_dcache_mem_arb_ctrl_cache;
   logic                     flush_dcache_wbuffer_arb_ctrl_cache;
   logic                     flush_dcache_fifo_ctrl_cache;

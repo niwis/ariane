@@ -221,7 +221,8 @@ module wt_dcache #(
     .clk_i           ( clk_i               ),
     .rst_ni          ( rst_ni              ),
     .flush_i         ( flush_i             ),
-    .flush_arb_i     ( flush_wbuffer_arb_i ),
+    // NOTE .flush_arb_i     ( flush_wbuffer_arb_i ),
+    .flush_arb_i     ( 0 ),
     .flush_fifo_i    ( flush_fifo_i        ),
     .empty_o         ( wbuffer_empty_o     ),
     // TODO: fix this

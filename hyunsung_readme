@@ -1,0 +1,16 @@
+Relaxing to basic flush (page 3 of microreset, search for NOTE in source files
+to see changes)
+
+ 1. LFSR reset to 0                                                                                                                                                                                   
+    wt_cache_subsystem.sv: lines 88, 117 (search for NOTE)                                                                                                                                            
+
+ 2. flush_tlb_plru_tree_ctrl_ex tied to 0                                                                                                                                                             
+    ariane.sv: line 223                                                                                                                                                                               
+
+ 3. a round-robin memory arbiter that arbitrates cache                                                                                                                                                
+    accesses between the load unit, the store unit, and                                                                                                                                               
+    the memory-management unit,                                                                                                                                                                       
+    wt_cache_subsystem.sv: line 120, flush_mem_arb_i                                                                                                                                                  
+
+ 4. flush_arb_i tied to 0 for wt_dcache_wbuffer, but not for wt_dcache_mem                                                                                                                            
+    wt_dcache.sv: line 224                                                            
