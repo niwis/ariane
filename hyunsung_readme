@@ -5,7 +5,7 @@ to see changes)
     wt_cache_subsystem.sv: lines 88, 117 (search for NOTE)                                                                                                                                            
 
  2. flush_tlb_plru_tree_ctrl_ex tied to 0                                                                                                                                                             
-    ariane.sv: line 223                                                                                                                                                                               
+    ariane.sv: line 427
 
  3. a round-robin memory arbiter that arbitrates cache                                                                                                                                                
     accesses between the load unit, the store unit, and                                                                                                                                               

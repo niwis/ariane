@@ -220,8 +220,7 @@ module ariane #(
   logic                     flush_commit;
   logic                     flush_dcache_lfsr_ctrl_cache;
   logic                     flush_icache_lfsr_ctrl_cache;
-  // NOTE logic                     flush_tlb_plru_tree_ctrl_ex;
-  logic                     flush_tlb_plru_tree_ctrl_ex = 0;
+  logic                     flush_tlb_plru_tree_ctrl_ex;
   logic                     flush_dcache_mem_arb_ctrl_cache;
   logic                     flush_dcache_wbuffer_arb_ctrl_cache;
   logic                     flush_dcache_fifo_ctrl_cache;
@@ -425,7 +424,8 @@ module ariane #(
     .enable_translation_i   ( enable_translation_csr_ex   ), // from CSR
     .en_ld_st_translation_i ( en_ld_st_translation_csr_ex ),
     .flush_tlb_i            ( flush_tlb_ctrl_ex           ),
-    .flush_tlb_plru_tree_i  ( flush_tlb_plru_tree_ctrl_ex ),
+    // NOTE: .flush_tlb_plru_tree_i  ( flush_tlb_plru_tree_ctrl_ex ),
+    .flush_tlb_plru_tree_i  ( 0 ),
     .priv_lvl_i             ( priv_lvl                    ), // from CSR
     .ld_st_priv_lvl_i       ( ld_st_priv_lvl_csr_ex       ), // from CSR
     .sum_i                  ( sum_csr_ex                  ), // from CSR
