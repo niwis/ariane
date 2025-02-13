@@ -645,7 +645,7 @@ module cva6
   dcache_req_o_t dcache_req_ports_cache_id;
   dcache_req_i_t [1:0] dcache_req_ports_acc_cache;
   dcache_req_o_t [1:0] dcache_req_ports_cache_acc;
-  logic dcache_commit_wbuffer_empty;
+      logic dcache_commit_wbuffer_empty;
   logic dcache_commit_wbuffer_not_ni;
 
   //RVFI
