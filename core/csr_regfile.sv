@@ -1479,7 +1479,7 @@ module csr_regfile
           // alignment constraint of 64 * 4 bytes
           if (DirVecOnly) mtvec_d = {csr_wdata[CVA6Cfg.XLEN-1:8], 7'b0, DirVecOnly};
         end
-        riscv::CSR_MCOUNTEREN: begin
+          riscv::CSR_MCOUNTEREN: begin
           if (CVA6Cfg.RVU) mcounteren_d = {{CVA6Cfg.XLEN - 32{1'b0}}, csr_wdata[31:0]};
           else update_access_exception = 1'b1;
         end
