@@ -21,4 +21,5 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           files: '$(find core -regex ".*\.\(v\|sv\)$" | grep -v "^core/include/.*_config_pkg.sv$")'
           fail_on_formatting_suggestions: true
-          reviewdog_reporter: github-check
+          reviewdog_reporter: github-pr-annotations
+          #reviewdog_reporter: github-check
