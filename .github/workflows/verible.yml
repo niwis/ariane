@@ -3,8 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 name: Verible
-on:
-  pull_request_target:
+on: [push, pull_request_target]
 
 jobs:
   format:
@@ -22,3 +21,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           files: '$(find core -regex ".*\.\(v\|sv\)$" | grep -v "^core/include/.*_config_pkg.sv$")'
           fail_on_formatting_suggestions: true
+          reviewdog_reporter: github-check
