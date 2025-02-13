@@ -2724,6 +2724,7 @@ module csr_regfile
           pmpaddr_next[i] = pmpaddr_q[i];
         end
       end else begin
+        pmpcfg_next[i]  = '1;
         pmpcfg_next[i]  = '0;
         pmpaddr_next[i] = '0;
       end
